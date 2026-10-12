@@ -54,5 +54,11 @@ pip install -r requirements.txt -r requirements-dev.txt
 pytest -q
 ```
 
-## License
-MIT
+## License and attribution
+MIT. You may use, modify and redistribute it, but the copyright notice in [`LICENSE`](LICENSE) must stay with every copy.
+
+**Please cite it.** If you use this system, fork it, or show it as part of your own work (portfolio, client project, article, talk), credit the original:
+
+> *Personal Finance System*, by diegocalle10-droid. https://github.com/diegocalle10-droid/personal-finance-system
+
+GitHub's **"Cite this repository"** button (right sidebar) gives you the BibTeX / APA form from [`CITATION.cff`](CITATION.cff). Keep a visible link back to this repository in forks and derived documentation.

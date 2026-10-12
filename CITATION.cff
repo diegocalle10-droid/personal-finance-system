@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this system, build on it or present it as part of your work, please cite it as below and keep the copyright notice of the LICENSE."
+title: "Personal Finance System: iOS Shortcuts + GitHub Actions + Supabase + nightly Claude routine"
+type: software
+authors:
+  - alias: "diegocalle10-droid"
+repository-code: "https://github.com/diegocalle10-droid/personal-finance-system"
+url: "https://github.com/diegocalle10-droid/personal-finance-system"
+license: MIT
+version: "0.1.0"
+date-released: "2026-10-12"
+keywords:
+  - personal finance
+  - iOS Shortcuts
+  - Supabase
+  - GitHub Actions
+  - Claude
+abstract: "Frictionless expense tracking: iPhone Shortcuts send expenses to GitHub Actions, which record them in a Supabase ledger with deterministic labeling, vision-based receipt reading, budgets with flexible periods and a nightly AI audit routine. Configurable per user through a setup interview."

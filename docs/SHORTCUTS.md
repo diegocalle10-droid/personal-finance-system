@@ -145,12 +145,16 @@ The date is **not asked**: every record is stamped with the system date at the m
 
 ---
 
-## Source files and signing
+## Getting the Shortcuts onto your iPhone (no Mac needed)
 
-`shortcuts/source/*.shortcut` are the exact Shortcuts of this guide (secrets and personal lists already replaced by placeholders, English prompts, the credit-card option included). They are **unsigned**, and iOS only imports signed Shortcuts, so before sharing or importing them sign on a Mac:
+`shortcuts/source/*.shortcut` are the exact Shortcuts of this guide, but they are **unsigned** and iOS only imports signed ones. Three ways, easiest first:
 
-```bash
-shortcuts sign --mode anyone --input shortcuts/source/Gasto_fijo.shortcut --output Gasto_fijo.signed.shortcut
-```
+1. **Use the published iCloud links** (table at the top). Tap, *Add Shortcut*, then fill the placeholders. iCloud signs them for you.
+2. **Build them by hand** in the Shortcuts app following the node tables of this page (about 15 minutes each), then *Share → Copy iCloud Link* if you want your own link.
+3. **Sign on a Mac** (only if you have one): `shortcuts sign --mode anyone --input shortcuts/source/Gasto_fijo.shortcut --output Gasto_fijo.signed.shortcut`, open the result, fill the placeholders.
 
-Open the signed file (it lands in the Shortcuts app), fill the placeholders, then *Share → Copy iCloud Link* to publish your own link. Without a Mac, build the Shortcut by hand following the node tables above (about 15 minutes each) or use the published iCloud links.
+### Publishing your own copy (what the repository owner does)
+No Mac is needed: the Shortcuts app on the iPhone signs when you share.
+1. Open the Shortcut, make sure every secret and personal list is a placeholder (see `shortcuts/PLACEHOLDERS.md`). An iCloud link exposes the **full content** of the Shortcut.
+2. *Share → Copy iCloud Link*. The link works for anyone and is a snapshot: after any edit, create a new link and update the table above.
+3. Optional but recommended: in the Shortcut's settings use **Setup → Add Import Question** on the text fields (GitHub owner, repository, token, project ref) so the installer is asked for each value when adding the Shortcut.
