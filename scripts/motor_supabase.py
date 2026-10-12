@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Funciones compartidas por todos los scripts de ingesta: resolver datos contra
-Supabase, notificar por Telegram y llamar a la IA de vision (Qwen/DashScope).
-No contiene logica de negocio de ningun tipo de ingesta en particular - eso
-vive en cada script (ingesta_estandarizada, ingesta_dinamica, ingesta_foto).
+Shared helpers for every ingestion script: resolve data against Supabase,
+notify through Telegram and call the vision model (Qwen / DashScope).
+It holds no business logic of any particular ingestion type: that lives in
+each script (ingesta_estandarizada, ingesta_dinamica, ingesta_foto).
 """
 import base64
 import json
@@ -38,13 +38,13 @@ def notificar_telegram(texto):
         url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
         requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": texto}, timeout=10)
     except requests.RequestException:
-        pass  # si Telegram falla, no debe tapar el error original
+        pass  # a Telegram failure must never hide the original error
 
 
 def normalizar(texto):
-    """minuscula, sin acentos, espacios colapsados - done by code, not by the user.
-    Tolera como se escribe de verdad ("Pechuga de POLLO" matchea keyword "pollo").
-    Lo comparten el matcher del gasto dinamico y el del gasto por foto."""
+    """Lowercase, accent-free, collapsed whitespace - done by code, not by the user.
+    Tolerates how things are really written ("Pechuga de POLLO" matches the
+    keyword "pollo"). Shared by the dynamic-expense matcher and the photo matcher."""
     if not texto:
         return ""
     t = unicodedata.normalize("NFKD", str(texto))
@@ -58,15 +58,15 @@ with open(SIGNO_POR_TIPO_PATH, encoding="utf-8") as _f:
 
 
 def resolver_signo(tipo):
-    """Devuelve +1/-1 segun config/signo_por_tipo.json para el 'tipo' de una
-    categoria (ingreso, gasto, etc.), o None si ese tipo no esta permitido en
-    un registro de una sola linea (ej. 'traspaso' necesita 2 filas ligadas)."""
+    """Returns +1/-1 from config/signo_por_tipo.json for a category 'tipo'
+    (ingreso, gasto, ...), or None if that type cannot be recorded in a
+    single row (e.g. 'traspaso' needs 2 linked rows)."""
     return _SIGNO_POR_TIPO.get(tipo)
 
 
 def resolver_categoria(codigo_categoria, fecha):
-    """Devuelve {id_categoria, tipo, glosa} de la version vigente en 'fecha',
-    o None si no existe ninguna version vigente para ese codigo+fecha."""
+    """Returns {id_categoria, tipo, glosa} of the version valid on 'fecha',
+    or None when no version is valid for that code + date."""
     url = f"{SUPABASE_URL}/rest/v1/categorias"
     params = {
         "codigo_categoria": f"eq.{codigo_categoria}",
@@ -81,7 +81,7 @@ def resolver_categoria(codigo_categoria, fecha):
 
 
 def resolver_id_cuenta_por_nombre(nombre_cuenta):
-    """Devuelve el id_cuenta cuyo nombre_cuenta coincide exacto, o None."""
+    """Returns the id_cuenta whose nombre_cuenta matches exactly, or None."""
     url = f"{SUPABASE_URL}/rest/v1/cuentas"
     params = {"nombre_cuenta": f"eq.{nombre_cuenta}", "select": "id_cuenta"}
     r = requests.get(url, headers=REST_HEADERS, params=params, timeout=15)
@@ -91,7 +91,7 @@ def resolver_id_cuenta_por_nombre(nombre_cuenta):
 
 
 def resolver_nombre_etiqueta_por_id(id_etiqueta):
-    """Devuelve el nombre_etiqueta cuyo id_etiqueta coincide exacto, o None."""
+    """Returns the nombre_etiqueta whose id_etiqueta matches exactly, or None."""
     url = f"{SUPABASE_URL}/rest/v1/etiquetas"
     params = {"id_etiqueta": f"eq.{id_etiqueta}", "select": "nombre_etiqueta"}
     r = requests.get(url, headers=REST_HEADERS, params=params, timeout=15)
@@ -101,15 +101,15 @@ def resolver_nombre_etiqueta_por_id(id_etiqueta):
 
 
 def insertar_filas(filas):
-    """POST atomico (una sola sentencia INSERT) de 1-N filas. Devuelve la
-    respuesta cruda de requests; el llamador decide como tratar el error."""
+    """Atomic POST (one single INSERT statement) of 1-N rows. Returns the raw
+    requests response; the caller decides how to handle an error."""
     url = f"{SUPABASE_URL}/rest/v1/seguimiento_efectivo"
     return requests.post(url, headers=REST_HEADERS, json=filas, timeout=15)
 
 
 def listar_objetos_storage(bucket):
-    """Devuelve la lista de objetos de un bucket (cada uno con 'name' y
-    'created_at' entre otros campos), tal como los expone Supabase Storage."""
+    """Returns the objects of a bucket (each with 'name' and 'created_at',
+    among other fields) as Supabase Storage exposes them."""
     url = f"{SUPABASE_URL}/storage/v1/object/list/{bucket}"
     body = {"prefix": "", "limit": 1000, "sortBy": {"column": "created_at", "order": "asc"}}
     r = requests.post(url, headers=REST_HEADERS, json=body, timeout=15)
@@ -118,8 +118,8 @@ def listar_objetos_storage(bucket):
 
 
 def borrar_objetos_storage(bucket, nombres):
-    """Borra en un solo lote una lista de objetos (por nombre, relativo al
-    bucket) de Supabase Storage. Devuelve la respuesta cruda de requests."""
+    """Deletes a list of objects (by name, relative to the bucket) from
+    Supabase Storage in one batch. Returns the raw requests response."""
     url = f"{SUPABASE_URL}/storage/v1/object/{bucket}"
     return requests.delete(url, headers=REST_HEADERS, json={"prefixes": nombres}, timeout=15)
 
@@ -128,9 +128,9 @@ NOTA_PENDIENTE = "Saved as pending: the nightly routine will process it tonight.
 
 
 def guardar_registro_pendiente(origen, payload, foto_bucket_path=None, error_detalle=None):
-    """Inserta un registro pendiente nuevo a partir de un fallo recien ocurrido.
-    Nace con estado='pendiente'; la rutina nocturna de Claude lo resuelve y lo
-    marca 'procesado', y la purga diaria de GitHub lo borra. Devuelve el
+    """Inserts a new pending record from a failure that just happened. It is
+    born with estado='pendiente'; the nightly Claude routine resolves it and
+    marks it 'procesado', and the daily GitHub purge deletes it. Returns the
     id_pendiente."""
     url = f"{SUPABASE_URL}/rest/v1/registros_pendientes"
     body = {
@@ -145,10 +145,9 @@ def guardar_registro_pendiente(origen, payload, foto_bucket_path=None, error_det
 
 
 def listar_fotos_pendientes_de_borrado():
-    """Rutas de Storage que siguen referenciadas en registros_pendientes
-    (origen gasto_foto) sin procesar. Lo usa limpieza_recibos.py para nunca
-    borrar una foto que el sistema todavia necesita; la de un pendiente ya
-    procesado si puede caducar."""
+    """Storage paths still referenced by unprocessed registros_pendientes
+    (origen gasto_foto). limpieza_recibos.py uses it to never delete a photo
+    the system still needs; the photo of an already processed pending can expire."""
     url = f"{SUPABASE_URL}/rest/v1/registros_pendientes"
     params = {"origen": "eq.gasto_foto", "estado": "eq.pendiente", "select": "foto_bucket_path"}
     r = requests.get(url, headers=REST_HEADERS, params=params, timeout=15)
@@ -157,7 +156,7 @@ def listar_fotos_pendientes_de_borrado():
 
 
 def borrar_registros_pendientes_de_foto(foto_bucket_path):
-    """Borra cualquier pendiente de origen gasto_foto asociado a esa ruta."""
+    """Deletes any gasto_foto pending associated with that path."""
     url = f"{SUPABASE_URL}/rest/v1/registros_pendientes"
     requests.delete(
         url,
@@ -167,24 +166,24 @@ def borrar_registros_pendientes_de_foto(foto_bucket_path):
     )
 
 
-# --- IA de vision: Qwen via DashScope (endpoint OpenAI-compatible) ---
-# QWEN_BASE_URL (workspace compatible-mode) va como secret en GitHub Actions.
-# El MODELO va aqui en el script como parametro (no como secret - no aporta
-# tenerlo fuera). Opciones: qwen3-vl-flash ($0.05/$0.40 por millon, el mas
-# barato) o qwen3-vl-plus ($0.20/$1.60). El prompt de foto esta disenado para
-# que flash rinda: menu numerado acotado a las categorias del Shortcut, glosario
-# que se impone en codigo y verificacion de importes contra el TOTAL.
+# --- Vision AI: Qwen through DashScope (OpenAI-compatible endpoint) ---
+# QWEN_BASE_URL (the compatible-mode URL of your workspace) is a GitHub Actions
+# secret. The MODEL is a parameter here in the script (not a secret). Options:
+# qwen3-vl-flash (cheapest) or qwen3-vl-plus (more capable). The photo prompt is
+# designed so that flash performs well: a numbered menu limited to the
+# categories chosen in the Shortcut, a glossary enforced in code and amount
+# verification against the receipt TOTAL.
 QWEN_BASE_URL = (os.environ.get("QWEN_BASE_URL") or "").rstrip("/")
 MODELO_QWEN = "qwen3-vl-flash"
 
-MAX_INTENTOS_QWEN = 3    # intentos totales (1 inicial + 2 reintentos)
-ESPERA_QWEN_5XX_SEG = 5  # 5xx = servidores saturados
+MAX_INTENTOS_QWEN = 3    # total attempts (1 initial + 2 retries)
+ESPERA_QWEN_5XX_SEG = 5  # 5xx = servers saturated
 ESPERA_QWEN_429_SEG = 20  # 429 = rate limit
 
 
 def _parsear_json_qwen(texto):
-    """Parsea el JSON que devuelve el modelo, tolerando que lo envuelva en
-    fences markdown (```json ... ```) o texto alrededor."""
+    """Parses the JSON the model returns, tolerating markdown fences
+    (```json ... ```) or text around it."""
     t = (texto or "").strip()
     if t.startswith("```"):
         t = t.strip("`")
@@ -203,15 +202,15 @@ def _parsear_json_qwen(texto):
 
 
 def llamar_qwen_json(prompt, imagen_bytes=None, api_key=None, sistema=None):
-    """Llama a Qwen (DashScope, endpoint OpenAI-compatible /chat/completions).
-    'sistema' (opcional) va como mensaje de sistema con las reglas; 'prompt' es
-    la instruccion del usuario y la imagen (opcional) va antes que el texto, como
-    recomienda Qwen-VL. temperature=0: lectura de tickets, no creatividad.
-    Devuelve el JSON parseado. Lanza RuntimeError con mensaje claro si algo falla.
+    """Calls Qwen (DashScope, OpenAI-compatible /chat/completions endpoint).
+    'sistema' (optional) is sent as the system message with the rules; 'prompt'
+    is the user instruction and the image (optional) goes before the text, as
+    Qwen-VL recommends. temperature=0: reading receipts, not creativity.
+    Returns the parsed JSON. Raises RuntimeError with a clear message on failure.
 
-    Reintenta ante codigos transitorios (5xx y 429); cualquier otro falla directo.
-    El reintento inmediato es SOLO para la IA - Supabase no se reintenta (si cae,
-    la operacion deriva a pendientes, por decision de diseno)."""
+    Retries on transient codes (5xx and 429); any other code fails right away.
+    The immediate retry is ONLY for the AI - Supabase is not retried (if it is
+    down, the operation becomes a pending record, by design)."""
     if not QWEN_BASE_URL:
         raise RuntimeError("QWEN_BASE_URL is missing from the environment (DashScope compatible-mode endpoint)")
     if not api_key:
@@ -244,7 +243,7 @@ def llamar_qwen_json(prompt, imagen_bytes=None, api_key=None, sistema=None):
         if r.status_code == 429:
             time.sleep(ESPERA_QWEN_429_SEG)
             continue
-        break  # cualquier otro codigo: reintentar no lo arregla
+        break  # any other code: retrying will not fix it
 
     if not r.ok:
         raise RuntimeError(f"Qwen rejected the request ({r.status_code}): {r.text}")

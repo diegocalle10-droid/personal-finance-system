@@ -22,7 +22,7 @@ Run this once per user, in Claude Code, inside a private copy of the repo. Be li
 - Name (unique, exact text; it will be typed in Shortcut lists), nature: `disponible` (spending/checking/cash), `ahorro` (savings), `credito` (credit card).
 - Payment medium: `debito` or `credito` (credit only for credit cards).
 - Opening balance and its date (generate an `ajuste patrimonial` row via the label `apertura` if not zero).
-- Ask which account is **the savings account** (exactly one with nature `ahorro` is used by `ahorro_aporte` / `ahorro_retiro`).
+- Ask which account is **the savings account** (exactly one with nature `ahorro` is used by `savings_deposit` / `savings_withdrawal`).
 
 ### 3. Credit cards — only for accounts with nature `credito`
 - Credit limit in EUR. (Any number of cards is supported.)
@@ -33,7 +33,7 @@ For each category:
 - `tipo`: `ingreso`, `gasto`, `coste fijo`, `traspaso`, `ajuste patrimonial`, `pago tarjeta`.
 - `periodicidad`: `mensual`, `bimensual`, `trimestral`, `cuatrimestral`, `semestral`, `anual`, `puntual`. Explain: the budget is for ONE period, and the monthly view shows it divided by the months of the period (trimestral 90 → 30/month); `anual` shows in the yearly view; `puntual` has no periodic budget.
 - `presupuesto_base` (EUR per period), `fecha_inicio`, whether it is currently active (if not, `fecha_fin`), optional `glosa` (e.g. the rent address, used as the comment of the rent payment).
-- Required by the system: `ingresos_varios` (type `ingreso`, used by the manual income flow), one `traspaso` (savings), one `pago tarjeta` (if there are cards), one `ajuste patrimonial`.
+- Required by the system: `other_income` (type `ingreso`, used by the manual income flow), one `traspaso` (savings), one `pago tarjeta` (if there are cards), one `ajuste patrimonial`.
 
 ### 5. Labels
 - Offer `supabase/seed_etiquetas_default.sql` (40 generic labels with criteria and Spanish keywords). Ask which to remove and which to add (name, criterion, keywords, `posibles_categorias`).
@@ -52,11 +52,11 @@ For each fixed expense (the Shortcut has 7 slots; the user may use fewer or more
 7. **Comment**: fixed text (`comentario_fijo`), or `"comentario_fuente": "categorias.glosa"` to use the category's `glosa` (typical for rent).
 8. **Valid from** (`fecha_inicio`).
 
-Validation before writing: amount present and non-zero; account exists; category valid on `fecha_inicio`; key unique and does not collide with `ahorro_aporte`, `ahorro_retiro`, `pago_tarjeta`.
+Validation before writing: amount present and non-zero; account exists; category valid on `fecha_inicio`; key unique and does not collide with `savings_deposit`, `savings_withdrawal`, `credit_card_payment`.
 
 Structural templates that are always included (do not ask, just confirm the accounts):
-- `ahorro_aporte` / `ahorro_retiro`: the savings account is fixed in the template; the account lists in the Shortcut are the accounts the user moves money from/to.
-- `pago_tarjeta` (credit card payment, two linked rows): include **only if** the user has credit cards; it needs a payment option in the Shortcut (see the repo's `docs/SHORTCUTS.md`).
+- `savings_deposit` / `savings_withdrawal`: the savings account is fixed in the template; the account lists in the Shortcut are the accounts the user moves money from/to.
+- `credit_card_payment` (credit card payment, two linked rows): include **only if** the user has credit cards; it needs a payment option in the Shortcut (see the repo's `docs/SHORTCUTS.md`).
 
 ## MIS_ATAJOS.md format
 Generate one section per Shortcut. For each node to edit give: **step number as the user sees it, node type, field, exact value to type**. Use tables, copy-paste-ready values, and no placeholder left unexplained. Required content:

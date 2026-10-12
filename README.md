@@ -2,8 +2,6 @@
 
 Frictionless expense tracking: tap an NFC tag or a Shortcut on your iPhone, the expense lands in a Postgres ledger, gets labeled automatically, and a nightly Claude routine audits and improves the labeling. Single currency (EUR), budgets with flexible periods, receipt photos read by a vision model.
 
-> **Resumen en español:** sistema de finanzas personales sin fricción. Un atajo de iPhone (NFC o manual) envía el gasto a GitHub Actions, que lo valida y lo guarda en Supabase; las etiquetas se resuelven por palabras clave y, si algo falla, queda como pendiente que una rutina nocturna de Claude resuelve y audita. Una entrevista inicial ("Fase 0") genera tus cuentas, categorías y plantillas. Ver [docs/SETUP.md](docs/SETUP.md).
-
 ## How it works
 
 ```
@@ -45,7 +43,7 @@ iOS Shortcut ──repository_dispatch──▶ GitHub Actions ──REST──�
 1. Create a Supabase project; run `supabase/setup.sql`, then `supabase/seed_etiquetas_default.sql`.
 2. Run the **Phase 0 interview** ([phase0/SKILL.md](phase0/SKILL.md)) with Claude Code: it generates `supabase/seed_usuario.sql`, your templates and `MIS_ATAJOS.md`.
 3. Set secrets and variables — which key to create, where, and where it is used: [docs/SECRETS.md](docs/SECRETS.md). What the interview asks: [docs/PHASE0.md](docs/PHASE0.md).
-4. Build the Shortcuts with the visual node-by-node guide: [docs/SHORTCUTS.md](docs/SHORTCUTS.md) (placeholders: [shortcuts/PLACEHOLDERS.md](shortcuts/PLACEHOLDERS.md)).
+4. Build the Shortcuts with the visual node-by-node guide: [docs/SHORTCUTS.md](docs/SHORTCUTS.md) (placeholders: [shortcuts/PLACEHOLDERS.md](shortcuts/PLACEHOLDERS.md); importable sources in `shortcuts/source`, to be signed on a Mac).
 5. Schedule the nightly routine ([rutina_nocturna/RUNBOOK.md](rutina_nocturna/RUNBOOK.md)).
 
 In your private copy, remove `config/plantillas_estandarizadas.json` and `supabase/seed_usuario.sql` from `.gitignore` so the workflows can read your templates.

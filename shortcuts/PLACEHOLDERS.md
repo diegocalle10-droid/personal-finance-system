@@ -26,24 +26,25 @@ Every `{{UPPER_CASE}}` token below is a value **you** provide when you build (or
 | `{{FIXED_EXPENSE_n_LABEL}}` | the text you want to see in the menu (free text) | — |
 | `{{FIXED_EXPENSE_n_KEY}}` | the **exact** template key sent as `tipo_ingesta` (case-sensitive, `snake_case`) | a top-level key of `config/plantillas_estandarizadas.json` |
 
-Rule: a fixed expense has a fixed amount and a fixed account (both in the template), so the Shortcut sends only the key and the date. Add slots by duplicating one, remove the ones you do not need. `ahorro_aporte` and `ahorro_retiro` are structural and stay as they are.
+Rule: a fixed expense has a fixed amount and a fixed account (both in the template), so the Shortcut sends only the key and the date. Add slots by duplicating one, remove the ones you do not need. `savings_deposit`, `savings_withdrawal` and `credit_card_payment` are structural and stay as they are.
 
 ## Your data — lists the Phase 0 interview generates for you
 
 | Placeholder | What to put | Must match |
 |---|---|---|
 | `{{ACCOUNT_1}}`, `{{ACCOUNT_2}}`, … | names of your accounts, exactly as in `cuentas.nombre_cuenta` (add or remove list items as needed; credit cards go in the lists where you can pay with them) | `cuentas.nombre_cuenta` |
+| `{{CREDIT_CARD_1}}`, … | names of your credit-card accounts, exactly as in `cuentas.nombre_cuenta` (list of the card-payment option) | `cuentas.nombre_cuenta` |
 | `{{CATEGORY_1}}`, `{{CATEGORY_2}}`, … | the **codes** (`codigo_categoria`) of the spending categories you want in the menu (any number) | `categorias.codigo_categoria` |
-| `{{INCOME_CATEGORY_CODE}}` | code of your catch-all income category (default `ingresos_varios`) | `categorias.codigo_categoria`, type `ingreso` |
-| `{{TUS_TARJETAS_WALLET}}` | the Wallet cards that trigger the `Compras` automation (picked in the Shortcuts app, not text) | — |
+| `{{INCOME_CATEGORY_CODE}}` | code of your catch-all income category (default `other_income`) | `categorias.codigo_categoria`, type `ingreso` |
+| `{{WALLET_CARDS}}` | the Wallet cards that trigger the `Compras` automation (picked in the Shortcuts app, not text) | — |
 
 ## Values that are fixed text, not placeholders
 - Event types are fixed by the workflows: `gasto_dinamico`, `gasto_foto`, `ingesta_estandarizada`.
 - The photo path is always `recibos/<random>.jpg` (bucket `recibos`).
-- Savings keys: `ahorro_aporte`, `ahorro_retiro`.
+- Structural keys: `savings_deposit`, `savings_withdrawal`, `credit_card_payment`.
 
 ## Making a shareable copy
 1. Duplicate the Shortcut in the Shortcuts app.
-2. Empty every field in the tables above (leave lists empty, token/URL fields blank or `completar`).
+2. Empty every field in the tables above (leave lists empty, token/URL fields blank or `FILL IN`).
 3. Share → Copy iCloud Link, and put the link in the release notes and in `docs/SHORTCUTS.md`.
 The receiver fills the blanks using the `MIS_ATAJOS.md` the Phase 0 interview generated for them.

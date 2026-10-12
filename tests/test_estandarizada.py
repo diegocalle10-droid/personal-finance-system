@@ -13,11 +13,11 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 EXAMPLE = os.path.join(ROOT, "config", "plantillas_estandarizadas.example.json")
 
 CATEGORIAS = {
-    "renta": {"id_categoria": "CT1", "tipo": "coste fijo", "glosa": "Street 1"},
-    "creditos": {"id_categoria": "CT2", "tipo": "pago tarjeta", "glosa": None},
-    "ahorros": {"id_categoria": "CT3", "tipo": "traspaso", "glosa": None},
-    "subscripciones": {"id_categoria": "CT4", "tipo": "coste fijo", "glosa": None},
-    "salario": {"id_categoria": "CT5", "tipo": "ingreso", "glosa": None},
+    "rent": {"id_categoria": "CT1", "tipo": "coste fijo", "glosa": "Street 1"},
+    "credit_card_payments": {"id_categoria": "CT2", "tipo": "pago tarjeta", "glosa": None},
+    "savings": {"id_categoria": "CT3", "tipo": "traspaso", "glosa": None},
+    "subscriptions": {"id_categoria": "CT4", "tipo": "coste fijo", "glosa": None},
+    "salary": {"id_categoria": "CT5", "tipo": "ingreso", "glosa": None},
 }
 CUENTAS = {"Main bank": "CU1", "Card A": "CU3", "Card B": "CU4"}
 
@@ -76,7 +76,7 @@ def test_rent_comment_comes_from_category_glosa():
 
 def test_variable_amount_template_still_supported_and_requires_monto():
     version = {"fecha_inicio": "2026-01-01", "fecha_fin": None, "nombre_operacion": "x", "id_cuenta": "CU1",
-               "codigo_categoria": "renta", "id_etiqueta": "ET1", "importe_fijo": None, "signo": -1,
+               "codigo_categoria": "rent", "id_etiqueta": "ET1", "importe_fijo": None, "signo": -1,
                "comentario_fijo": "c"}
     assert est.construir_fila_simple(version, "2026-03-01", "12,5", None, None)["importe"] == -12.5
     with pytest.raises(ValueError):
@@ -84,7 +84,7 @@ def test_variable_amount_template_still_supported_and_requires_monto():
 
 
 def test_card_payment_creates_two_linked_rows_on_the_chosen_card():
-    version = est.cargar_version_vigente("pago_tarjeta", "2026-03-01")
+    version = est.cargar_version_vigente("credit_card_payment", "2026-03-01")
     filas = est.construir_filas_multiples(version, "2026-03-01", "200", "Main bank", "Card B", None)
     assert [f["id_cuenta"] for f in filas] == ["CU1", "CU4"]
     assert [f["importe"] for f in filas] == [-200.0, 200.0]
@@ -93,13 +93,13 @@ def test_card_payment_creates_two_linked_rows_on_the_chosen_card():
 
 
 def test_card_payment_without_destination_card_fails():
-    version = est.cargar_version_vigente("pago_tarjeta", "2026-03-01")
+    version = est.cargar_version_vigente("credit_card_payment", "2026-03-01")
     with pytest.raises(ValueError):
         est.construir_filas_multiples(version, "2026-03-01", "200", "Main bank", None, None)
 
 
 def test_savings_deposit_nets_to_zero_and_needs_comment():
-    version = est.cargar_version_vigente("ahorro_aporte", "2026-03-01")
+    version = est.cargar_version_vigente("savings_deposit", "2026-03-01")
     filas = est.construir_filas_multiples(version, "2026-03-01", "50", "Main bank", None, "Monthly saving")
     assert [f["importe"] for f in filas] == [-50.0, 50.0]
     assert [f["id_cuenta"] for f in filas] == ["CU1", "CU000004"]
@@ -108,7 +108,7 @@ def test_savings_deposit_nets_to_zero_and_needs_comment():
 
 
 def test_savings_withdrawal_goes_to_the_chosen_account():
-    version = est.cargar_version_vigente("ahorro_retiro", "2026-03-01")
+    version = est.cargar_version_vigente("savings_withdrawal", "2026-03-01")
     filas = est.construir_filas_multiples(version, "2026-03-01", "50", "Main bank", None, "Need cash")
     assert [f["importe"] for f in filas] == [-50.0, 50.0]
     assert [f["id_cuenta"] for f in filas] == ["CU000004", "CU1"]

@@ -47,11 +47,11 @@ def test_fixed_expense_shortcut_structure():
 
     def walk(n):
         if isinstance(n, dict):
-            t = (n.get("parametros") or {}).get("TextActionText")
-            if n.get("accion") == "Texto" and isinstance(t, str):
+            t = (n.get("parameters") or {}).get("TextActionText")
+            if n.get("action") == "Text" and isinstance(t, str):
                 texts.append(t)
-            if "opcion" in n:
-                labels.append(n["opcion"])
+            if "option" in n:
+                labels.append(n["option"])
             for v in n.values():
                 walk(v)
         elif isinstance(n, list):
@@ -60,7 +60,7 @@ def test_fixed_expense_shortcut_structure():
     walk(load("shortcuts/Gasto_fijo.json"))
     templates = set(load("config/plantillas_estandarizadas.example.json"))
     literal = {t for t in texts if not t.startswith("{{")}
-    assert literal == {"ahorro_aporte", "ahorro_retiro"}
+    assert literal == {"savings_deposit", "savings_withdrawal", "credit_card_payment"}
     assert literal <= templates
     slots = [t for t in texts if re.fullmatch(r"\{\{FIXED_EXPENSE_\d+_KEY\}\}", t)]
     slot_labels = [l for l in labels if re.fullmatch(r"\{\{FIXED_EXPENSE_\d+_LABEL\}\}", l)]
@@ -117,7 +117,7 @@ def test_template_categories_exist_in_example_seed():
     for versiones in load("config/plantillas_estandarizadas.example.json").values():
         for v in versiones:
             assert v["codigo_categoria"] in codes, v["codigo_categoria"]
-    assert "ingresos_varios" in codes  # required by the manual income flow
+    assert "other_income" in codes  # required by the manual income flow
 
 
 def test_cleanup_keeps_referenced_photos_even_with_bucket_prefix(monkeypatch):
@@ -164,13 +164,13 @@ def test_dynamic_flow_builds_expected_rows(monkeypatch):
     monkeypatch.setattr(dyn, "resolver_id_cuenta_por_nombre", lambda n: "CU000001")
     monkeypatch.setattr(
         dyn, "resolver_categoria",
-        lambda c, f: {"id_categoria": "CT1", "tipo": "gasto"} if c == "alimentacion"
+        lambda c, f: {"id_categoria": "CT1", "tipo": "gasto"} if c == "groceries"
         else {"id_categoria": "CT2", "tipo": "ingreso"})
     monkeypatch.setattr(dyn, "listar_etiquetas_para_matcher", lambda: [
-        {"id_etiqueta": "ET3", "nombre_etiqueta": "despensa", "keyword": ["leche"],
-         "posibles_categorias": ["alimentacion"]},
-        {"id_etiqueta": "ET16", "nombre_etiqueta": "salario", "keyword": ["nomina"],
-         "posibles_categorias": ["ingresos_varios"]},
+        {"id_etiqueta": "ET3", "nombre_etiqueta": "groceries", "keyword": ["leche"],
+         "posibles_categorias": ["groceries"]},
+        {"id_etiqueta": "ET16", "nombre_etiqueta": "salary", "keyword": ["nomina"],
+         "posibles_categorias": ["other_income"]},
     ])
     captured = {}
 
@@ -186,12 +186,12 @@ def test_dynamic_flow_builds_expected_rows(monkeypatch):
 
     monkeypatch.setattr(dyn, "insertar_filas", fake_insert)
     lineas = json.dumps([
-        {"categoria": "alimentacion", "importe": "2,5", "nombre_operacion": "Leche", "comentario": ""},
-        {"categoria": "ingresos_varios", "importe": "10", "nombre_operacion": "Nomina", "comentario": "x"},
+        {"categoria": "groceries", "importe": "2,5", "nombre_operacion": "Leche", "comentario": ""},
+        {"categoria": "other_income", "importe": "10", "nombre_operacion": "Nomina", "comentario": "x"},
     ])
     _, etiquetas, fecha = dyn.procesar_gasto_dinamico("Main bank", lineas, "2026-10-05")
     assert [f["importe"] for f in captured["filas"]] == [-2.5, 10.0]
-    assert etiquetas == ["despensa", "salario"] and fecha == "2026-10-05"
+    assert etiquetas == ["groceries", "salary"] and fecha == "2026-10-05"
     assert all("medio_pago" not in f for f in captured["filas"])  # set by the DB trigger
 
 
@@ -200,8 +200,8 @@ def test_dynamic_accepts_date_inside_lines_as_fallback(monkeypatch):
     monkeypatch.setattr(dyn, "resolver_id_cuenta_por_nombre", lambda n: "CU000001")
     monkeypatch.setattr(dyn, "resolver_categoria", lambda c, f: {"id_categoria": "CT1", "tipo": "gasto"})
     monkeypatch.setattr(dyn, "listar_etiquetas_para_matcher", lambda: [
-        {"id_etiqueta": "ET3", "nombre_etiqueta": "despensa", "keyword": ["leche"],
-         "posibles_categorias": ["alimentacion"]}])
+        {"id_etiqueta": "ET3", "nombre_etiqueta": "groceries", "keyword": ["leche"],
+         "posibles_categorias": ["groceries"]}])
     seen = {}
 
     class Resp:
@@ -215,8 +215,28 @@ def test_dynamic_accepts_date_inside_lines_as_fallback(monkeypatch):
         return Resp()
 
     monkeypatch.setattr(dyn, "insertar_filas", fake_insert)
-    lineas = json.dumps([{"fecha": "2026-09-01", "categoria": "alimentacion", "importe": "1",
+    lineas = json.dumps([{"fecha": "2026-09-01", "categoria": "groceries", "importe": "1",
                           "nombre_operacion": "leche", "comentario": ""}])
     _, _, fecha = dyn.procesar_gasto_dinamico("Main bank", lineas, None)
     assert fecha == "2026-09-01"
     assert seen["filas"][0]["fecha_operacion"] == "2026-09-01"
+
+
+def test_shortcut_sources_are_clean_and_consistent():
+    import plistlib
+    import edit_shortcuts as es
+    files = sorted(glob.glob(os.path.join(ROOT, "shortcuts", "source", "*.shortcut")))
+    assert len(files) == 3
+    for p in files:
+        pl = plistlib.load(open(p, "rb"))
+        assert es.validate(pl, os.path.basename(p)) == [], p
+        text = json.dumps(pl, ensure_ascii=False, default=lambda o: "<bytes>")
+        for word in ("completar", "Aporte de ahorro", "Pago de tarjeta", "Selecciona", "ingresos_varios"):
+            assert word not in text, (p, word)
+        for t in pl.get("WFWorkflowTriggers", []):
+            assert t["WFTriggerSerializedParameters"]["WFWalletCards"] == []
+
+
+def test_manufinanza_does_not_ask_or_send_a_date():
+    text = read("shortcuts/Manufinanza.json")
+    assert '"fecha"' not in text and "Formatted Date" not in text

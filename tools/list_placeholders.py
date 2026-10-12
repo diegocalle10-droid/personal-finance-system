@@ -16,7 +16,7 @@ PH = re.compile(r"\{\{([A-Z][A-Z0-9_]+)\}\}")
 
 def scan(node, path, found, shortcut):
     if isinstance(node, dict):
-        paso = node.get("paso", path)
+        paso = node.get("step", path)
         for v in node.values():
             scan(v, paso, found, shortcut)
     elif isinstance(node, list):

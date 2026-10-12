@@ -1,26 +1,26 @@
 # -*- coding: utf-8 -*-
 """
-Gasto por foto (NFC/Manual, rama "con foto"): el Shortcut sube la imagen del
-recibo a Supabase Storage (bucket 'recibos') y manda cuenta + la ruta del objeto
-que el propio Shortcut genero.
+Photo expense (NFC / manual, "with receipt" branch): the Shortcut uploads the
+receipt image to Supabase Storage (bucket 'recibos') and sends the account +
+the object path that the Shortcut itself generated.
 
-Diseno de responsabilidades (para que la IA nunca pueda romper presupuesto):
-- CATEGORIAS las preselecciona el usuario en el Shortcut. El prompt se construye EN
-  VIVO solo con esas categorias: un MENU numerado de pares categoria/etiqueta
-  (con ejemplos sacados de etiquetas.keyword). La IA solo elige un numero del
-  menu por producto - nunca escribe nombres de categoria/etiqueta a mano.
-- El GLOSARIO manda sobre la IA: si las keywords de una etiqueta reconocen el
-  producto, esa opcion se impone a la que eligio el modelo (determinista).
-- IMPORTES se verifican contra el TOTAL impreso en el ticket. Si no cuadran se
-  pide una relectura; si siguen sin cuadrar, se deriva a pendientes.
-- FECHA siempre es la fecha de ejecucion del workflow (zona horaria TZ_SISTEMA).
+Division of responsibilities (so the AI can never break the budget):
+- CATEGORIES are preselected by the user in the Shortcut. The prompt is built
+  LIVE with only those categories: a numbered MENU of category/label pairs
+  (with examples taken from etiquetas.keyword). The AI only picks a number from
+  the menu per product - it never writes category/label names by hand.
+- The GLOSSARY overrides the AI: if the keywords of a label recognize the
+  product, that option wins over the one the model chose (deterministic).
+- AMOUNTS are verified against the TOTAL printed on the receipt. If they do not
+  add up one re-read is requested; if they still do not, it becomes a pending.
+- DATE is always the workflow run date (time zone TZ_SISTEMA).
 
-La IA de vision es Qwen via DashScope (endpoint OpenAI-compatible).
-La logica real vive en procesar_foto() - no llama a error_salir ni sys.exit, solo
-lanza excepciones; main() decide Telegram y pendiente.
+The vision AI is Qwen through DashScope (OpenAI-compatible endpoint).
+The real work lives in procesar_foto() - it never calls Telegram or sys.exit,
+it only raises; main() decides about Telegram and the pending record.
 
-Sin RUN2, sin botones, sin webhook: se inserta directo y Telegram notifica. Si
-algo sale mal se corrige a mano despues (via Supabase MCP).
+No buttons, no webhook: the rows are inserted directly and Telegram notifies.
+If something goes wrong it is corrected by hand afterwards.
 """
 import json
 import os
@@ -54,31 +54,30 @@ FOTO_PATH = os.environ.get("FOTO_PATH") or None
 CATEGORIAS_RAW = os.environ.get("CATEGORIAS_PERMITIDAS") or None
 
 ZONA = ZoneInfo(TZ_SISTEMA)
-MAX_LINEAS = 60  # un ticket real no supera esto, es solo un limite de cordura
-MAX_KW_POR_OPCION = 15  # ejemplos por opcion del menu: orientan sin inflar el prompt
-TOLERANCIA_TOTAL = 0.05  # EUR de margen entre la suma de lineas y el TOTAL del ticket
+MAX_LINEAS = 60  # a real receipt never exceeds this; it is only a sanity limit
+MAX_KW_POR_OPCION = 15  # examples per menu option: they guide without bloating the prompt
+TOLERANCIA_TOTAL = 0.05  # margin between the sum of lines and the receipt TOTAL
 IMPORTES_EJEMPLO = (1.25, 2.40, 3.10, 0.95, 4.60)
 
-INSTRUCCION_USUARIO = "Lee este ticket y devuelve el JSON."
+INSTRUCCION_USUARIO = "Read this receipt and return the JSON."
 
 
-class FotoNoEncontrada(RuntimeError):
-    """La foto ya no existe en Storage (se cumplio la retencion o se borro):
-    no se puede leer el recibo."""
+class FotoNoEncontrada(Exception):
+    """The photo no longer exists in Storage (cleanup already removed it)."""
 
 
 def parsear_categorias(raw):
-    """Normaliza 'categorias' venga como venga del Shortcut a una lista de
-    codigos limpia, sin tener que tocar el Shortcut (son fragiles de mantener).
+    """Normalizes 'categorias' however it arrives from the Shortcut into a clean
+    list of codes, without touching the Shortcut (they are fragile to maintain).
 
-    Casos reales observados:
-    - array JSON correcto: ["alimentacion", "hogar"]
-    - array de UN elemento con los codigos pegados por comillas-coma:
-      ["alimentacion','salud_belleza"]  (lo que manda hoy el Shortcut)
-    - string plano con separadores (coma, salto de linea, ; | etc.)
+    Real cases observed:
+    - a correct JSON array: ["groceries", "home"]
+    - an array of ONE element with codes glued by quote-comma:
+      ["groceries','health_beauty"]  (what the Shortcut sends today)
+    - a plain string with separators (comma, newline, ; | etc.)
 
-    Estrategia: parsear JSON si se puede, aplanar a piezas, y separar cada
-    pieza por comillas / comas / corchetes / ; / | / espacios.
+    Strategy: parse JSON if possible, flatten to pieces, and split each piece by
+    quotes / commas / brackets / ; / | / whitespace.
     """
     if raw is None:
         return []
@@ -101,9 +100,9 @@ def parsear_categorias(raw):
 
 
 def listar_etiquetas_completo():
-    """Etiquetas activas con id, nombre, posibles_categorias, criterio y keywords.
-    Con esto se construye el menu del prompt y se resuelve el id sin mas
-    consultas. En vivo, sin cache."""
+    """Active labels with id, name, posibles_categorias, criterio and keywords.
+    It builds the prompt menu and resolves the id without more queries. Live,
+    no cache."""
     url = f"{SUPABASE_URL}/rest/v1/etiquetas"
     params = {"estado": "eq.activa", "select": "id_etiqueta,nombre_etiqueta,posibles_categorias,criterio,keyword"}
     r = requests.get(url, headers=REST_HEADERS, params=params, timeout=15)
@@ -115,30 +114,30 @@ def descargar_foto(path):
     url = f"{SUPABASE_URL}/storage/v1/object/{path}"
     r = requests.get(url, headers=REST_HEADERS, timeout=30)
     if r.status_code == 404:
-        raise FotoNoEncontrada(f"La foto '{path}' ya no existe en Supabase Storage")
+        raise FotoNoEncontrada(f"Photo '{path}' no longer exists in Supabase Storage")
     if not r.ok:
-        raise RuntimeError(f"No se pudo descargar la foto '{path}' de Supabase Storage ({r.status_code}): {r.text}")
+        raise RuntimeError(f"Could not download photo '{path}' from Supabase Storage ({r.status_code}): {r.text}")
     return r.content
 
 
 def resolver_categorias_permitidas(codigos, fecha):
-    """Valida en vivo contra Supabase cada codigo_categoria que el usuario
-    preselecciono en el Shortcut. Devuelve {codigo: categoria_info}."""
+    """Validates live against Supabase every codigo_categoria the user
+    preselected in the Shortcut. Returns {code: category_info}."""
     resueltas = {}
     for codigo in codigos:
         categoria = resolver_categoria(codigo, fecha)
         if categoria is None:
-            raise RuntimeError(f"La categoria preseleccionada '{codigo}' no tiene version vigente para la fecha {fecha}")
+            raise RuntimeError(f"Preselected category '{codigo}' has no valid version for date {fecha}")
         resueltas[codigo] = categoria
     return resueltas
 
 
-# --- Menu dinamico: SOLO las categorias que llegaron del Shortcut ---
+# --- Dynamic menu: ONLY the categories that arrived from the Shortcut ---
 
 def construir_menu(categorias_permitidas, etiquetas_full):
-    """Opciones numeradas (categoria, etiqueta) de las categorias preseleccionadas,
-    segun etiquetas.posibles_categorias. Una etiqueta que vive en dos categorias
-    permitidas aparece como dos opciones (una por categoria)."""
+    """Numbered (category, label) options of the preselected categories, by
+    etiquetas.posibles_categorias. A label that lives in two allowed categories
+    appears as two options (one per category)."""
     menu = []
     for codigo in categorias_permitidas:
         propias = sorted(
@@ -146,7 +145,7 @@ def construir_menu(categorias_permitidas, etiquetas_full):
             key=lambda e: e["nombre_etiqueta"],
         )
         if not propias:
-            raise RuntimeError(f"La categoria '{codigo}' no tiene etiquetas asociadas (posibles_categorias)")
+            raise RuntimeError(f"Category '{codigo}' has no associated labels (posibles_categorias)")
         for e in propias:
             menu.append({
                 "opcion": len(menu) + 1,
@@ -160,69 +159,69 @@ def construir_menu(categorias_permitidas, etiquetas_full):
 
 
 def texto_menu(menu):
-    """Cada opcion: categoria / etiqueta, su criterio (lo que la distingue de sus
-    hermanas) y ejemplos de productos."""
+    """Each option: category / label, its criterion (what tells it apart from
+    its siblings) and product examples."""
     return "\n".join(
         f"{o['opcion']} = {o['categoria']} / {o['etiqueta']}"
         + (f" | {o['criterio']}" if o["criterio"] else "")
-        + f" | ej: {', '.join(o['keywords'][:MAX_KW_POR_OPCION]) or '-'}"
+        + f" | e.g.: {', '.join(o['keywords'][:MAX_KW_POR_OPCION]) or '-'}"
         for o in menu
     )
 
 
 def construir_ejemplo(menu, categorias_permitidas):
-    """Ejemplo de salida generado con el propio menu: un producto por cada
-    categoria recibida, tomado de los ejemplos de su primera etiqueta. Asi el
-    ejemplo siempre muestra el reparto con LAS categorias de este ticket."""
+    """Output example generated from the menu itself: one product per received
+    category, taken from the examples of its first label. So the example always
+    shows the split using THIS receipt's categories."""
     elegidas = []
     for codigo in categorias_permitidas:
         opciones = [o for o in menu if o["categoria"] == codigo and o["keywords"]]
         if opciones:
             elegidas.append(opciones[0])
-    if len(elegidas) == 1:  # una sola categoria: dos productos de etiquetas distintas
+    if len(elegidas) == 1:  # a single category: two products of different labels
         elegidas += [o for o in menu if o["keywords"] and o["etiqueta"] != elegidas[0]["etiqueta"]][:1]
 
     lineas = []
     for i, o in enumerate(elegidas):
         kw = o["keywords"][0]
         lineas.append({
-            "texto_ticket": kw.upper(),
-            "importe": IMPORTES_EJEMPLO[i % len(IMPORTES_EJEMPLO)],
-            "producto": kw.capitalize(),
-            "opcion": o["opcion"],
+            "receipt_text": kw.upper(),
+            "amount": IMPORTES_EJEMPLO[i % len(IMPORTES_EJEMPLO)],
+            "product": kw.capitalize(),
+            "option": o["opcion"],
         })
-    total = round(sum(linea["importe"] for linea in lineas), 2)
-    return json.dumps({"comercio": "Nombre del comercio", "total": total, "lineas": lineas}, ensure_ascii=False)
+    total = round(sum(linea["amount"] for linea in lineas), 2)
+    return json.dumps({"merchant": "Store name", "total": total, "lines": lineas}, ensure_ascii=False)
 
 
 def construir_prompt_sistema(menu, categorias_permitidas):
-    return f"""Eres el lector de tickets de compra de un sistema financiero personal. Tu trabajo tiene dos pasos: transcribir cada producto del ticket con su importe, y asignar a cada producto la opcion del menu que describe lo que ES ese producto.
+    return f"""You are the purchase-receipt reader of a personal finance system. Your job has two steps: transcribe every product of the receipt with its amount, and assign to every product the menu option that describes what that product IS.
 
-PASO 1 - TRANSCRIBIR
-- Recorre el ticket de arriba abajo. Cada producto del ticket es un objeto propio en "lineas", en el mismo orden del ticket.
-- "texto_ticket": el texto del producto copiado tal cual aparece.
-- "importe": el precio impreso en ESE MISMO renglon, a la derecha del producto. Numero positivo con punto decimal.
-- Productos a peso o con varias unidades: el renglon de detalle ("1,268 kg x 1,49 EUR/kg", "2 x 0,85") forma parte del producto de arriba; su importe es el total de ese producto.
-- Descuentos, promociones y cupones: restalos del importe del producto al que se aplican.
-- "total": el TOTAL a pagar impreso en el ticket.
-- Comprobacion final: la suma de los importes de "lineas" es igual a "total".
+STEP 1 - TRANSCRIBE
+- Go through the receipt from top to bottom. Every product of the receipt is its own object in "lines", in the same order as the receipt.
+- "receipt_text": the product text copied exactly as it appears.
+- "amount": the price printed on THAT SAME row, to the right of the product. Positive number with a decimal point.
+- Products sold by weight or in several units: the detail row ("1,268 kg x 1,49 EUR/kg", "2 x 0,85") is part of the product above; its amount is the total of that product.
+- Discounts, promotions and coupons: subtract them from the amount of the product they apply to.
+- "total": the TOTAL to pay printed on the receipt.
+- Final check: the sum of the amounts in "lines" equals "total".
 
-PASO 2 - CLASIFICAR
-- Cada producto recibe el numero de la opcion del menu cuya definicion describe lo que es el producto. Se juzga el producto, no la tienda.
-- Cada producto se clasifica por si solo: un mismo ticket reparte sus productos entre las categorias del menu que les correspondan.
-- Entre opciones parecidas decide la definicion; los ejemplos orientan. Un producto que no aparezca en los ejemplos va a la opcion cuya definicion le encaje mejor.
-- "producto": nombre corto y legible del producto en espanol.
+STEP 2 - CLASSIFY
+- Every product receives the number of the menu option whose definition describes what the product is. Judge the product, not the store.
+- Every product is classified on its own: one receipt splits its products among the menu categories that fit them.
+- Among similar options the definition decides; the examples only guide. A product that is not in the examples goes to the option whose definition fits it best.
+- "product": a short, readable product name in the language of the receipt.
 
-MENU (numero = categoria / etiqueta | definicion | ejemplos de productos)
+MENU (number = category / label | definition | product examples)
 {texto_menu(menu)}
 
-FORMATO DE SALIDA: unicamente este JSON.
-Ejemplo de forma (productos ilustrativos, cada uno en la opcion de su naturaleza):
+OUTPUT FORMAT: only this JSON.
+Example of the shape (illustrative products, each one in the option matching its nature):
 {construir_ejemplo(menu, categorias_permitidas)}
 """
 
 
-# --- Lectura con verificacion contra el TOTAL del ticket ---
+# --- Reading with verification against the receipt TOTAL ---
 
 def _numero(valor):
     if valor is None or isinstance(valor, bool):
@@ -234,9 +233,9 @@ def _numero(valor):
 
 
 def verificar_total(resultado_ia):
-    """(cuadra, suma, total). Si el ticket no trae total legible, no se bloquea."""
-    lineas = resultado_ia.get("lineas") or []
-    suma = round(sum(_numero(linea.get("importe")) or 0 for linea in lineas), 2)
+    """(adds_up, sum, total). If the receipt has no readable total, it never blocks."""
+    lineas = resultado_ia.get("lines") or []
+    suma = round(sum(_numero(linea.get("amount")) or 0 for linea in lineas), 2)
     total = _numero(resultado_ia.get("total"))
     if total is None:
         return True, suma, None
@@ -244,39 +243,39 @@ def verificar_total(resultado_ia):
 
 
 def llamar_qwen(imagen_bytes, sistema, instruccion):
-    return llamar_qwen_json(instruccion, imagen_bytes, DASHSCOPE_API_KEY, sistema=sistema)  # deja propagar RuntimeError
+    return llamar_qwen_json(instruccion, imagen_bytes, DASHSCOPE_API_KEY, sistema=sistema)  # lets RuntimeError propagate
 
 
 def leer_ticket(imagen_bytes, sistema):
-    """Primera lectura; si la suma no cuadra con el TOTAL, UNA relectura con el
-    descuadre como pista. Si sigue sin cuadrar, error -> pendiente (mejor revisar
-    a mano que meter importes mal en el presupuesto)."""
+    """First read; if the sum does not match the TOTAL, ONE re-read with the
+    mismatch as a hint. If it still does not match, error -> pending (better to
+    review by hand than to put wrong amounts into the budget)."""
     resultado = llamar_qwen(imagen_bytes, sistema, INSTRUCCION_USUARIO)
     cuadra, suma, total = verificar_total(resultado)
     if cuadra:
         return resultado
 
     relectura = (
-        f"{INSTRUCCION_USUARIO}\n\nREVISION: en una lectura anterior la suma de importes dio {suma:.2f} "
-        f"y el TOTAL impreso es {total:.2f}. Lee el ticket renglon por renglon y toma para cada "
-        "producto el importe de su mismo renglon."
+        f"{INSTRUCCION_USUARIO}\n\nREVIEW: in a previous read the sum of amounts was {suma:.2f} "
+        f"and the printed TOTAL is {total:.2f}. Read the receipt row by row and take, for each "
+        "product, the amount on its own row."
     )
     resultado = llamar_qwen(imagen_bytes, sistema, relectura)
     cuadra, suma, total = verificar_total(resultado)
     if not cuadra:
         raise RuntimeError(
-            f"Los importes leidos no cuadran con el total del ticket (suma {suma:.2f} vs total {total:.2f}) "
-            "- revisar a mano"
+            f"The amounts read do not match the receipt total (sum {suma:.2f} vs total {total:.2f}) "
+            "- review by hand"
         )
     return resultado
 
 
-# --- Clasificacion: el glosario manda, la IA cubre lo que el glosario no conoce ---
+# --- Classification: the glossary rules, the AI covers what the glossary does not know ---
 
 def opciones_por_keyword(texto, menu):
-    """Opciones del menu con mejor puntaje de keywords sobre el texto (palabra
-    completa, sin acentos). Puntaje = longitud de las keywords que coinciden, para
-    que lo especifico gane a lo generico. [] si nada coincide."""
+    """Menu options with the best keyword score over the text (whole word,
+    accent-free). Score = length of the matching keywords, so specific beats
+    generic. [] when nothing matches."""
     texto_norm = normalizar(texto)
     if not texto_norm:
         return []
@@ -296,15 +295,15 @@ def opciones_por_keyword(texto, menu):
 
 
 def resolver_opcion(linea, menu, menu_por_id):
-    """Devuelve (opcion, por_glosario). El glosario se impone a la IA cuando
-    reconoce el producto sin ambiguedad; si no, vale la opcion de la IA."""
-    numero = _numero(linea.get("opcion"))
+    """Returns (option, by_glossary). The glossary overrides the AI when it
+    recognizes the product unambiguously; otherwise the AI's option stands."""
+    numero = _numero(linea.get("option"))
     opcion_ia = menu_por_id.get(int(numero)) if numero is not None else None
 
-    # Manda el texto literal del ticket; el nombre que pone la IA solo cuenta si
-    # el ticket no coincide con nada (ej. abreviaturas: "YOG GRIEGO" -> "Yogur").
-    candidatas = (opciones_por_keyword(linea.get("texto_ticket"), menu)
-                  or opciones_por_keyword(linea.get("producto"), menu))
+    # The literal receipt text rules; the name the AI writes only counts when the
+    # receipt matches nothing (e.g. abbreviations: "YOG GRIEGO" -> "Yogur").
+    candidatas = (opciones_por_keyword(linea.get("receipt_text"), menu)
+                  or opciones_por_keyword(linea.get("product"), menu))
     if candidatas and opcion_ia not in candidatas:
         if len(candidatas) == 1:
             return candidatas[0], True
@@ -315,39 +314,39 @@ def resolver_opcion(linea, menu, menu_por_id):
     if opcion_ia is None:
         if candidatas:
             return candidatas[0], True
-        raise RuntimeError(f"Linea incompleta devuelta por la IA (opcion fuera del menu): {linea}")
+        raise RuntimeError(f"Incomplete line returned by the AI (option outside the menu): {linea}")
     return opcion_ia, False
 
 
 def construir_fila(linea, opcion, id_cuenta, fecha, categorias_dict):
-    importe = _numero(linea.get("importe"))
+    importe = _numero(linea.get("amount"))
     if importe is None:
-        raise RuntimeError(f"Linea incompleta devuelta por la IA (sin importe): {linea}")
+        raise RuntimeError(f"Incomplete line returned by the AI (no amount): {linea}")
 
     categoria = categorias_dict[opcion["categoria"]]
     signo = resolver_signo(categoria["tipo"])
     if signo is None:
         raise RuntimeError(
-            f"La categoria '{opcion['categoria']}' es de tipo '{categoria['tipo']}', "
-            "que no se puede registrar en una sola linea (ej. un traspaso necesita 2 filas ligadas)"
+            f"Category '{opcion['categoria']}' has type '{categoria['tipo']}', "
+            "which cannot be recorded as a single row (e.g. a transfer needs 2 linked rows)"
         )
 
     return {
-        "nombre_operacion": linea.get("producto") or opcion["etiqueta"].capitalize(),
+        "nombre_operacion": linea.get("product") or opcion["etiqueta"].capitalize(),
         "importe": abs(importe) * signo,
         "fecha_operacion": fecha,
         "id_cuenta": id_cuenta,
         "id_categoria": categoria["id_categoria"],
         "id_etiqueta": opcion["id_etiqueta"],
-        "comentario": linea.get("texto_ticket"),
+        "comentario": linea.get("receipt_text"),
         "tipo": categoria["tipo"],
     }
 
 
 def procesar_foto(cuenta_nombre, codigos_categoria, foto_path):
-    """Hace todo el trabajo real. Devuelve (filas_insertadas, etiquetas, comercio,
-    fecha) en exito. Lanza FotoNoEncontrada o RuntimeError en fallo - nunca
-    Telegram ni sys.exit, eso lo decide el llamador."""
+    """Does the real work. Returns (inserted_rows, labels, merchant, date) on
+    success. Raises FotoNoEncontrada or RuntimeError on failure - never
+    Telegram or sys.exit, the caller decides."""
     id_cuenta = resolver_id_cuenta_por_nombre(cuenta_nombre)
     if id_cuenta is None:
         raise RuntimeError(f"No account named '{cuenta_nombre}'")
@@ -362,21 +361,21 @@ def procesar_foto(cuenta_nombre, codigos_categoria, foto_path):
     imagen_bytes = descargar_foto(foto_path)
     resultado_ia = leer_ticket(imagen_bytes, sistema)
 
-    lineas_ia = resultado_ia.get("lineas") or []
+    lineas_ia = resultado_ia.get("lines") or []
     if not (1 <= len(lineas_ia) <= MAX_LINEAS):
-        raise RuntimeError(f"La IA devolvio {len(lineas_ia)} lineas, fuera del rango valido 1-{MAX_LINEAS}")
+        raise RuntimeError(f"The AI returned {len(lineas_ia)} lines, outside the valid range 1-{MAX_LINEAS}")
 
     filas, etiquetas = [], []
     for linea in lineas_ia:
         opcion, por_glosario = resolver_opcion(linea, menu, menu_por_id)
         filas.append(construir_fila(linea, opcion, id_cuenta, hoy, categorias_dict))
-        etiquetas.append(f"{opcion['categoria']} / {opcion['etiqueta']}" + (" (glosario)" if por_glosario else ""))
+        etiquetas.append(f"{opcion['categoria']} / {opcion['etiqueta']}" + (" (glossary)" if por_glosario else ""))
 
     resultado = insertar_filas(filas)
     if not resultado.ok:
         raise RuntimeError(f"Supabase rejected the insert ({resultado.status_code}): {resultado.text}")
 
-    comercio = resultado_ia.get("comercio") or "unidentified merchant"
+    comercio = resultado_ia.get("merchant") or "unidentified merchant"
     return resultado.json(), etiquetas, comercio, hoy
 
 

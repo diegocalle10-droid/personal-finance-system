@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-Purga diaria de registros_pendientes ya procesados.
+Daily purge of already processed registros_pendientes.
 
-La rutina nocturna de Claude (WS4) no puede borrar filas: el conector MCP de
-Supabase pide aprobacion humana para cualquier SQL destructivo y la rutina es
-desatendida. Por eso la rutina solo MARCA cada pendiente que resuelve
-(estado='procesado') y este job, que usa la service key por REST y no pasa por
-el MCP, los borra fisicamente una vez al dia.
+The nightly Claude routine cannot delete rows: the Supabase MCP connector asks
+for human approval on any destructive SQL and the routine is unattended. So
+the routine only MARKS each pending it resolves (estado='procesado') and this
+job, which uses the service key over REST and does not go through MCP,
+physically deletes them once a day.
 
-Corre 1 h 30 min despues de la rutina (ambos crons en UTC, sin horario de
-verano). Los pendientes en estado 'pendiente' nunca se tocan.
+It runs 1 h 30 min after the routine (both crons in UTC, no daylight saving
+shift). Pendings in estado 'pendiente' are never touched.
 """
 import sys
 
@@ -19,7 +19,7 @@ from motor_supabase import SUPABASE_URL, REST_HEADERS, notificar_telegram
 
 
 def purgar_procesados():
-    """Borra los pendientes con estado='procesado'. Devuelve las filas borradas."""
+    """Deletes pendings with estado='procesado'. Returns the deleted rows."""
     url = f"{SUPABASE_URL}/rest/v1/registros_pendientes"
     r = requests.delete(url, headers=REST_HEADERS, params={"estado": "eq.procesado"}, timeout=15)
     r.raise_for_status()

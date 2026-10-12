@@ -1,51 +1,51 @@
 {
-  "nombre": "Gasto_fijo",
-  "version_minima_ios_cliente": "900",
-  "disparadores": [],
-  "acciones": [
+  "name": "Gasto_fijo",
+  "minimum_ios_client_version": "900",
+  "triggers": [],
+  "actions": [
     {
-      "paso": 1,
-      "accion": "Pedir dato",
-      "parametros": {
-        "AskActionPrompt": "Cuál es la fecha del pago?",
+      "step": 1,
+      "action": "Ask for input",
+      "parameters": {
+        "AskActionPrompt": "What is the payment date?",
         "InputType": "Date"
       }
     },
     {
-      "paso": 2,
-      "accion": "Formatear fecha",
-      "parametros": {
-        "DateFormatStyle": "Custom",
+      "step": 2,
+      "action": "Format date",
+      "parameters": {
+        "Date": "{{Ask for Input}}",
         "DateFormat": "yyyy-MM-dd",
-        "Locale": "es",
-        "Date": "{{Ask for Input}}"
+        "DateFormatStyle": "Custom",
+        "Locale": "en"
       }
     },
     {
-      "paso": 3,
-      "accion": "Menu",
-      "pregunta": "What are you logging?",
-      "ramas": [
+      "step": 3,
+      "action": "Menu",
+      "question": "What are you logging?",
+      "branches": [
         {
-          "opcion": "{{FIXED_EXPENSE_1_LABEL}}",
-          "pasos": [
+          "option": "{{FIXED_EXPENSE_1_LABEL}}",
+          "steps": [
             {
-              "paso": 4,
-              "accion": "Texto",
-              "parametros": {
+              "step": 4,
+              "action": "Text",
+              "parameters": {
                 "TextActionText": "{{FIXED_EXPENSE_1_KEY}}"
               }
             },
             {
-              "paso": 5,
-              "accion": "HTTP request",
-              "parametros": {
+              "step": 5,
+              "action": "Get contents of URL",
+              "parameters": {
+                "ShowHeaders": false,
                 "HTTPHeaders": {
                   "Authorization": "Bearer {{GITHUB_PAT}}",
                   "Accept": "application/vnd.github+json"
                 },
-                "ShowHeaders": false,
-                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
+                "HTTPMethod": "POST",
                 "JSONValues": {
                   "event_type": "ingesta_estandarizada",
                   "client_payload": {
@@ -53,31 +53,31 @@
                     "fecha": "{{Formatted Date}}"
                   }
                 },
-                "HTTPMethod": "POST"
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches"
               }
             }
           ]
         },
         {
-          "opcion": "{{FIXED_EXPENSE_2_LABEL}}",
-          "pasos": [
+          "option": "{{FIXED_EXPENSE_2_LABEL}}",
+          "steps": [
             {
-              "paso": 6,
-              "accion": "Texto",
-              "parametros": {
+              "step": 6,
+              "action": "Text",
+              "parameters": {
                 "TextActionText": "{{FIXED_EXPENSE_2_KEY}}"
               }
             },
             {
-              "paso": 7,
-              "accion": "HTTP request",
-              "parametros": {
+              "step": 7,
+              "action": "Get contents of URL",
+              "parameters": {
+                "ShowHeaders": false,
                 "HTTPHeaders": {
                   "Authorization": "Bearer {{GITHUB_PAT}}",
                   "Accept": "application/vnd.github+json"
                 },
-                "ShowHeaders": false,
-                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
+                "HTTPMethod": "POST",
                 "JSONValues": {
                   "event_type": "ingesta_estandarizada",
                   "client_payload": {
@@ -85,31 +85,31 @@
                     "fecha": "{{Formatted Date}}"
                   }
                 },
-                "HTTPMethod": "POST"
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches"
               }
             }
           ]
         },
         {
-          "opcion": "{{FIXED_EXPENSE_3_LABEL}}",
-          "pasos": [
+          "option": "{{FIXED_EXPENSE_3_LABEL}}",
+          "steps": [
             {
-              "paso": 8,
-              "accion": "Texto",
-              "parametros": {
+              "step": 8,
+              "action": "Text",
+              "parameters": {
                 "TextActionText": "{{FIXED_EXPENSE_3_KEY}}"
               }
             },
             {
-              "paso": 9,
-              "accion": "HTTP request",
-              "parametros": {
+              "step": 9,
+              "action": "Get contents of URL",
+              "parameters": {
+                "ShowHeaders": false,
                 "HTTPHeaders": {
                   "Authorization": "Bearer {{GITHUB_PAT}}",
                   "Accept": "application/vnd.github+json"
                 },
-                "ShowHeaders": false,
-                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
+                "HTTPMethod": "POST",
                 "JSONValues": {
                   "event_type": "ingesta_estandarizada",
                   "client_payload": {
@@ -117,31 +117,31 @@
                     "fecha": "{{Formatted Date}}"
                   }
                 },
-                "HTTPMethod": "POST"
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches"
               }
             }
           ]
         },
         {
-          "opcion": "{{FIXED_EXPENSE_4_LABEL}}",
-          "pasos": [
+          "option": "{{FIXED_EXPENSE_4_LABEL}}",
+          "steps": [
             {
-              "paso": 10,
-              "accion": "Texto",
-              "parametros": {
+              "step": 10,
+              "action": "Text",
+              "parameters": {
                 "TextActionText": "{{FIXED_EXPENSE_4_KEY}}"
               }
             },
             {
-              "paso": 11,
-              "accion": "HTTP request",
-              "parametros": {
+              "step": 11,
+              "action": "Get contents of URL",
+              "parameters": {
+                "ShowHeaders": false,
                 "HTTPHeaders": {
                   "Authorization": "Bearer {{GITHUB_PAT}}",
                   "Accept": "application/vnd.github+json"
                 },
-                "ShowHeaders": false,
-                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
+                "HTTPMethod": "POST",
                 "JSONValues": {
                   "event_type": "ingesta_estandarizada",
                   "client_payload": {
@@ -149,31 +149,31 @@
                     "fecha": "{{Formatted Date}}"
                   }
                 },
-                "HTTPMethod": "POST"
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches"
               }
             }
           ]
         },
         {
-          "opcion": "{{FIXED_EXPENSE_5_LABEL}}",
-          "pasos": [
+          "option": "{{FIXED_EXPENSE_5_LABEL}}",
+          "steps": [
             {
-              "paso": 12,
-              "accion": "Texto",
-              "parametros": {
+              "step": 12,
+              "action": "Text",
+              "parameters": {
                 "TextActionText": "{{FIXED_EXPENSE_5_KEY}}"
               }
             },
             {
-              "paso": 13,
-              "accion": "HTTP request",
-              "parametros": {
+              "step": 13,
+              "action": "Get contents of URL",
+              "parameters": {
+                "ShowHeaders": false,
                 "HTTPHeaders": {
                   "Authorization": "Bearer {{GITHUB_PAT}}",
                   "Accept": "application/vnd.github+json"
                 },
-                "ShowHeaders": false,
-                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
+                "HTTPMethod": "POST",
                 "JSONValues": {
                   "event_type": "ingesta_estandarizada",
                   "client_payload": {
@@ -181,97 +181,97 @@
                     "fecha": "{{Formatted Date}}"
                   }
                 },
-                "HTTPMethod": "POST"
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches"
               }
             }
           ]
         },
         {
-          "opcion": "{{FIXED_EXPENSE_6_LABEL}}",
-          "pasos": [
+          "option": "{{FIXED_EXPENSE_6_LABEL}}",
+          "steps": [
             {
-              "paso": 14,
-              "accion": "Texto",
-              "parametros": {
+              "step": 14,
+              "action": "Text",
+              "parameters": {
                 "TextActionText": "{{FIXED_EXPENSE_6_KEY}}"
               }
             },
             {
-              "paso": 15,
-              "accion": "HTTP request",
-              "parametros": {
+              "step": 15,
+              "action": "Get contents of URL",
+              "parameters": {
+                "ShowHeaders": false,
                 "HTTPHeaders": {
                   "Authorization": "Bearer {{GITHUB_PAT}}",
                   "Accept": "application/vnd.github+json"
                 },
-                "ShowHeaders": false,
-                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
+                "HTTPMethod": "POST",
                 "JSONValues": {
                   "event_type": "ingesta_estandarizada",
                   "client_payload": {
-                    "tipo_ingesta": "{{Texto}}",
+                    "tipo_ingesta": "{{Text}}",
                     "fecha": "{{Formatted Date}}"
                   }
                 },
-                "HTTPMethod": "POST"
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches"
               }
             }
           ]
         },
         {
-          "opcion": "{{FIXED_EXPENSE_7_LABEL}}",
-          "pasos": [
+          "option": "{{FIXED_EXPENSE_7_LABEL}}",
+          "steps": [
             {
-              "paso": 16,
-              "accion": "Texto",
-              "parametros": {
+              "step": 16,
+              "action": "Text",
+              "parameters": {
                 "TextActionText": "{{FIXED_EXPENSE_7_KEY}}"
               }
             },
             {
-              "paso": 17,
-              "accion": "HTTP request",
-              "parametros": {
+              "step": 17,
+              "action": "Get contents of URL",
+              "parameters": {
+                "ShowHeaders": false,
                 "HTTPHeaders": {
                   "Authorization": "Bearer {{GITHUB_PAT}}",
                   "Accept": "application/vnd.github+json"
                 },
-                "ShowHeaders": false,
-                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
+                "HTTPMethod": "POST",
                 "JSONValues": {
                   "event_type": "ingesta_estandarizada",
                   "client_payload": {
-                    "tipo_ingesta": "{{Texto}}",
+                    "tipo_ingesta": "{{Text}}",
                     "fecha": "{{Formatted Date}}"
                   }
                 },
-                "HTTPMethod": "POST"
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches"
               }
             }
           ]
         },
         {
-          "opcion": "Savings deposit",
-          "pasos": [
+          "option": "Savings deposit",
+          "steps": [
             {
-              "paso": 18,
-              "accion": "Texto",
-              "parametros": {
-                "TextActionText": "ahorro_aporte"
+              "step": 18,
+              "action": "Text",
+              "parameters": {
+                "TextActionText": "savings_deposit"
               }
             },
             {
-              "paso": 19,
-              "accion": "Pedir dato",
-              "parametros": {
-                "InputType": "Number",
-                "AskActionPrompt": "How much did you pay?"
+              "step": 19,
+              "action": "Ask for input",
+              "parameters": {
+                "AskActionPrompt": "How much are you saving?",
+                "InputType": "Number"
               }
             },
             {
-              "paso": 20,
-              "accion": "Lista",
-              "parametros": {
+              "step": 20,
+              "action": "List",
+              "parameters": {
                 "Items": [
                   "{{ACCOUNT_1}}",
                   "{{ACCOUNT_2}}"
@@ -279,31 +279,31 @@
               }
             },
             {
-              "paso": 21,
-              "accion": "Elegir de lista",
-              "parametros": {
-                "Input": "{{List}}",
-                "ChooseFromListActionPrompt": "Which account are used?"
+              "step": 21,
+              "action": "Choose from list",
+              "parameters": {
+                "ChooseFromListActionPrompt": "Which account is used?",
+                "Input": "{{List}}"
               }
             },
             {
-              "paso": 22,
-              "accion": "Pedir dato",
-              "parametros": {
-                "InputType": "Text",
-                "AskActionPrompt": "Why are you saving this?"
+              "step": 22,
+              "action": "Ask for input",
+              "parameters": {
+                "AskActionPrompt": "Why are you saving this?",
+                "InputType": "Text"
               }
             },
             {
-              "paso": 23,
-              "accion": "HTTP request",
-              "parametros": {
+              "step": 23,
+              "action": "Get contents of URL",
+              "parameters": {
+                "ShowHeaders": false,
                 "HTTPHeaders": {
                   "Authorization": "Bearer {{GITHUB_PAT}}",
                   "Accept": "application/vnd.github+json"
                 },
-                "ShowHeaders": false,
-                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
+                "HTTPMethod": "POST",
                 "JSONValues": {
                   "event_type": "ingesta_estandarizada",
                   "client_payload": {
@@ -314,33 +314,33 @@
                     "comentario": "{{Ask for Input}}"
                   }
                 },
-                "HTTPMethod": "POST"
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches"
               }
             }
           ]
         },
         {
-          "opcion": "Savings withdrawal",
-          "pasos": [
+          "option": "Credit card payment",
+          "steps": [
             {
-              "paso": 24,
-              "accion": "Texto",
-              "parametros": {
-                "TextActionText": "ahorro_retiro"
+              "step": 24,
+              "action": "Text",
+              "parameters": {
+                "TextActionText": "credit_card_payment"
               }
             },
             {
-              "paso": 25,
-              "accion": "Pedir dato",
-              "parametros": {
+              "step": 25,
+              "action": "Ask for input",
+              "parameters": {
                 "AskActionPrompt": "How much did you pay?",
                 "InputType": "Number"
               }
             },
             {
-              "paso": 26,
-              "accion": "Lista",
-              "parametros": {
+              "step": 26,
+              "action": "List",
+              "parameters": {
                 "Items": [
                   "{{ACCOUNT_1}}",
                   "{{ACCOUNT_2}}"
@@ -348,31 +348,109 @@
               }
             },
             {
-              "paso": 27,
-              "accion": "Elegir de lista",
-              "parametros": {
-                "Input": "{{List}}",
-                "ChooseFromListActionPrompt": "Which account are used?"
+              "step": 27,
+              "action": "Choose from list",
+              "parameters": {
+                "ChooseFromListActionPrompt": "Which account are you paying from?",
+                "Input": "{{List}}"
               }
             },
             {
-              "paso": 28,
-              "accion": "Pedir dato",
-              "parametros": {
-                "InputType": "Text",
-                "AskActionPrompt": "Why are you withdrawing this?"
+              "step": 28,
+              "action": "List",
+              "parameters": {
+                "Items": [
+                  "{{CREDIT_CARD_1}}"
+                ]
               }
             },
             {
-              "paso": 29,
-              "accion": "HTTP request",
-              "parametros": {
+              "step": 29,
+              "action": "Choose from list",
+              "parameters": {
+                "ChooseFromListActionPrompt": "Which card are you paying?",
+                "Input": "{{List}}"
+              }
+            },
+            {
+              "step": 30,
+              "action": "Get contents of URL",
+              "parameters": {
+                "ShowHeaders": false,
                 "HTTPHeaders": {
                   "Authorization": "Bearer {{GITHUB_PAT}}",
                   "Accept": "application/vnd.github+json"
                 },
+                "HTTPMethod": "POST",
+                "JSONValues": {
+                  "event_type": "ingesta_estandarizada",
+                  "client_payload": {
+                    "tipo_ingesta": "{{Text}}",
+                    "fecha": "{{Formatted Date}}",
+                    "monto": "{{Ask for Input}}",
+                    "cuenta": "{{Selected Item}}",
+                    "cuenta_destino": "{{Selected Item}}"
+                  }
+                },
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches"
+              }
+            }
+          ]
+        },
+        {
+          "option": "Savings withdrawal",
+          "steps": [
+            {
+              "step": 31,
+              "action": "Text",
+              "parameters": {
+                "TextActionText": "savings_withdrawal"
+              }
+            },
+            {
+              "step": 32,
+              "action": "Ask for input",
+              "parameters": {
+                "AskActionPrompt": "How much are you withdrawing?",
+                "InputType": "Number"
+              }
+            },
+            {
+              "step": 33,
+              "action": "List",
+              "parameters": {
+                "Items": [
+                  "{{ACCOUNT_1}}",
+                  "{{ACCOUNT_2}}"
+                ]
+              }
+            },
+            {
+              "step": 34,
+              "action": "Choose from list",
+              "parameters": {
+                "ChooseFromListActionPrompt": "Which account is used?",
+                "Input": "{{List}}"
+              }
+            },
+            {
+              "step": 35,
+              "action": "Ask for input",
+              "parameters": {
+                "AskActionPrompt": "Why are you withdrawing this?",
+                "InputType": "Text"
+              }
+            },
+            {
+              "step": 36,
+              "action": "Get contents of URL",
+              "parameters": {
                 "ShowHeaders": false,
-                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
+                "HTTPHeaders": {
+                  "Authorization": "Bearer {{GITHUB_PAT}}",
+                  "Accept": "application/vnd.github+json"
+                },
+                "HTTPMethod": "POST",
                 "JSONValues": {
                   "event_type": "ingesta_estandarizada",
                   "client_payload": {
@@ -383,7 +461,7 @@
                     "comentario": "{{Ask for Input}}"
                   }
                 },
-                "HTTPMethod": "POST"
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches"
               }
             }
           ]

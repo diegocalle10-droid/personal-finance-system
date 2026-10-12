@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-Limpieza del bucket 'recibos': corre cada 2 dias (cron) y borra solo los
-objetos con mas de RETENCION_DIAS de antiguedad. 7 dias de ventana le dan
-tiempo de sobra a la rutina nocturna de Claude (corre cada noche) para
-procesar un pendiente de foto antes de perder la foto.
+Cleanup of the 'recibos' bucket: runs every 2 days (cron) and deletes only
+objects older than RETENCION_DIAS. A 7-day window gives the nightly Claude
+routine (it runs every night) plenty of time to process a photo pending
+before the photo is lost.
 
-Doble condicional antes de borrar: ademas de la edad, se excluye cualquier
-foto que todavia este referenciada por un pendiente sin procesar
-(origen gasto_foto, estado='pendiente') - si sigue ahi es porque el sistema
-todavia la necesita, sin importar cuantos dias hayan pasado. Las de pendientes
-ya procesados si caducan con normalidad.
+Double condition before deleting: besides the age, any photo still referenced
+by an unprocessed pending (origen gasto_foto, estado='pendiente') is excluded
+- if it is still there, the system still needs it no matter how many days have
+passed. Photos of already processed pendings expire normally.
 """
 from datetime import datetime, timedelta, timezone
 

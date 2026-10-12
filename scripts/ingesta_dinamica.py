@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
 """
-Gasto dinamico (NFC / Hub Manual): una cuenta compartida, opcionalmente una
-fecha, y 1-3 lineas de gasto (importe + categoria + un texto corto que describe
-la compra). La categoria la elige el usuario en el Shortcut (afecta presupuesto).
+Dynamic expense (NFC / manual hub): one account, optionally a date, and 1-3
+expense lines (amount + category + a short text describing the purchase). The
+user picks the category in the Shortcut (it drives the budget).
 
-La ETIQUETA ya NO la decide una IA. Se resuelve por KEYWORD MATCHING
-determinista contra el vocabulario vigente de `etiquetas` (consultado en vivo a
-Supabase, sin cache), acotado por la categoria elegida (posibles_categorias).
-Si ninguna keyword coincide, la operacion se deriva a registros_pendientes para
-que la rutina nocturna (Claude) la clasifique. Instantaneo, gratis y sin red
-para la etiqueta.
+The LABEL is NOT decided by an AI. It is resolved by deterministic KEYWORD
+MATCHING against the current vocabulary of `etiquetas` (read live from
+Supabase, no cache), bounded by the chosen category (posibles_categorias). If
+no keyword matches, the operation becomes a registros_pendientes record for
+the nightly routine (Claude) to classify. Instant, free and no network call
+for the label.
 
-Si no llega 'fecha' se usa la fecha de ejecucion del workflow (zona horaria TZ_SISTEMA)
-- pensado para NFC, que se dispara en el instante exacto del pago.
+When no 'fecha' arrives, the workflow run date is used (time zone TZ_SISTEMA)
+- meant for NFC, which fires at the exact moment of payment.
 
-La logica real vive en procesar_gasto_dinamico() - no llama a Telegram ni hace
-sys.exit, solo lanza excepciones. Esto permite reusarla desde main() (disparo
-normal); si falla, el pendiente lo procesa la rutina nocturna de Claude.
+The real work lives in procesar_gasto_dinamico() - it never calls Telegram or
+sys.exit, it only raises. main() decides what to do; on failure the pending
+record is handled by the nightly Claude routine.
 """
 import json
 import os
@@ -49,8 +49,8 @@ ZONA = ZoneInfo(TZ_SISTEMA)
 
 
 def normalizar_importe(importe):
-    """El Shortcut puede mandar el decimal con coma o punto segun el formato
-    regional del iPhone - se normaliza aqui."""
+    """The Shortcut may send the decimal with comma or dot depending on the
+    iPhone regional format - normalized here."""
     return float(str(importe).replace(",", "."))
 
 
@@ -61,8 +61,8 @@ def resolver_fecha(fecha_shortcut):
 
 
 def listar_etiquetas_para_matcher():
-    """Vocabulario vigente en vivo desde Supabase: id, nombre, keyword[],
-    posibles_categorias[]. Sin cache (opcion A: un dato, un lugar)."""
+    """Current vocabulary read live from Supabase: id, name, keyword[],
+    posibles_categorias[]. No cache (one datum, one place)."""
     url = f"{SUPABASE_URL}/rest/v1/etiquetas"
     params = {
         "estado": "eq.activa",
@@ -74,11 +74,11 @@ def listar_etiquetas_para_matcher():
 
 
 def resolver_etiqueta_por_keyword(texto, codigo_categoria, etiquetas):
-    """Devuelve (nombre_etiqueta, id_etiqueta) de la etiqueta cuyas keywords
-    tienen mas coincidencias dentro del texto, acotada a las etiquetas cuyo
-    posibles_categorias incluye la categoria elegida. (None, None) si nada
-    coincide. El score pondera por longitud de keyword para que un match
-    especifico ("pechuga de pollo") gane a uno generico ("pollo")."""
+    """Returns (nombre_etiqueta, id_etiqueta) of the label whose keywords have
+    the most matches inside the text, bounded to labels whose
+    posibles_categorias includes the chosen category. (None, None) when
+    nothing matches. The score weighs keyword length so a specific match
+    ("pechuga de pollo") beats a generic one ("pollo")."""
     texto_norm = normalizar(texto)
     if not texto_norm:
         return None, None
@@ -107,25 +107,25 @@ def construir_fila(linea, id_cuenta, fecha, etiquetas):
     importe = linea.get("importe")
 
     if not codigo_categoria or importe is None:
-        raise ValueError(f"Linea incompleta, falta categoria/importe: {linea}")
+        raise ValueError(f"Incomplete line, missing categoria/importe: {linea}")
 
     categoria = resolver_categoria(codigo_categoria, fecha)
     if categoria is None:
-        raise ValueError(f"No hay version vigente de la categoria '{codigo_categoria}' para la fecha {fecha}")
+        raise ValueError(f"No valid version of category '{codigo_categoria}' for date {fecha}")
 
     signo = resolver_signo(categoria["tipo"])
     if signo is None:
         raise ValueError(
-            f"La categoria '{codigo_categoria}' es de tipo '{categoria['tipo']}', "
-            "que no se puede registrar en una sola linea (ej. un traspaso necesita 2 filas ligadas)"
+            f"Category '{codigo_categoria}' has type '{categoria['tipo']}', "
+            "which cannot be recorded as a single row (e.g. a transfer needs 2 linked rows)"
         )
 
     texto = linea.get("nombre_operacion") or ""
     nombre_etiqueta, id_etiqueta = resolver_etiqueta_por_keyword(texto, codigo_categoria, etiquetas)
     if id_etiqueta is None:
         raise RuntimeError(
-            f"Sin match de keyword para '{texto}' en la categoria '{codigo_categoria}' "
-            "- se deriva a pendientes para clasificacion nocturna"
+            f"No keyword match for '{texto}' in category '{codigo_categoria}' "
+            "- moved to pendings for nightly classification"
         )
 
     return {
@@ -141,9 +141,9 @@ def construir_fila(linea, id_cuenta, fecha, etiquetas):
 
 
 def procesar_gasto_dinamico(cuenta_nombre, lineas_raw, fecha_shortcut):
-    """Hace todo el trabajo real a partir del payload crudo del Shortcut.
-    Lanza excepciones en cualquier fallo (ValueError datos invalidos,
-    RuntimeError sin-match/Supabase) - nunca Telegram ni sys.exit."""
+    """Does the real work from the Shortcut's raw payload. Raises on any
+    failure (ValueError invalid data, RuntimeError no-match/Supabase) - never
+    Telegram or sys.exit."""
     if not cuenta_nombre:
         raise ValueError("Missing 'cuenta' in payload")
     if not lineas_raw:
@@ -152,11 +152,11 @@ def procesar_gasto_dinamico(cuenta_nombre, lineas_raw, fecha_shortcut):
     try:
         lineas = json.loads(lineas_raw) if isinstance(lineas_raw, str) else lineas_raw
     except json.JSONDecodeError:
-        raise ValueError(f"'lineas' no es JSON valido: {lineas_raw}")
+        raise ValueError(f"'lineas' is not valid JSON: {lineas_raw}")
 
     if not isinstance(lineas, list) or not (1 <= len(lineas) <= 3):
-        cantidad = len(lineas) if isinstance(lineas, list) else "datos invalidos"
-        raise ValueError(f"'lineas' debe ser una lista de 1 a 3 gastos, llego: {cantidad}")
+        cantidad = len(lineas) if isinstance(lineas, list) else "invalid data"
+        raise ValueError(f"'lineas' must be a list of 1 to 3 expenses, got: {cantidad}")
 
     id_cuenta = resolver_id_cuenta_por_nombre(cuenta_nombre)
     if id_cuenta is None:

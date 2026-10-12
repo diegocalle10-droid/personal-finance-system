@@ -1,6 +1,6 @@
 # Shortcuts guide — what each one does and exactly what to fill in
 
-Three Shortcuts feed the system. You duplicate them from the links below, fill the blanks (`completar` / `complete` in the Shortcut, `{{PLACEHOLDER}}` in the JSON files of this repo) and you are done. The Phase 0 interview generates a `MIS_ATAJOS.md` with **your** values for every blank, node by node; this page explains the blanks.
+Three Shortcuts feed the system. You duplicate them from the links below, fill the blanks (`{{PLACEHOLDER}}` tokens in the Shortcut and in the JSON files of this repo) and you are done. The Phase 0 interview generates a `MIS_ATAJOS.md` with **your** values for every blank, node by node; this page explains the blanks.
 
 | # | Shortcut | Use it to | Starts from | Link |
 |---|---|---|---|---|
@@ -27,7 +27,7 @@ This is the node that sends the expense to your repository. It is the **same con
 
 `<GITHUB_PAT>` is a fine-grained token limited to your private repo with *Contents: Read and write* ([SECRETS.md](SECRETS.md)).
 
-### B. "Get contents of URL" that uploads the receipt photo (Compras and Manufinanza, branch "Sí")
+### B. "Get contents of URL" that uploads the receipt photo (Compras and Manufinanza, branch "Yes")
 | Field | Value |
 |---|---|
 | URL | `https://<SUPABASE_PROJECT_REF>.supabase.co/storage/v1/object/` **followed by the variable `Text`** (the text node that holds `recibos/<number>.jpg`) |
@@ -49,8 +49,9 @@ flowchart TD
     B --> C{Menu}
     C -->|slot 1..7: your fixed expense| D[Text = template key]
     D --> E[GitHub dispatch<br/>tipo_ingesta + fecha]
-    C -->|Savings deposit| F[Text = ahorro_aporte] --> G[Ask amount] --> H[Choose account] --> I[Ask why] --> J[GitHub dispatch<br/>+ monto, cuenta, comentario]
-    C -->|Savings withdrawal| K[Text = ahorro_retiro] --> L[Ask amount] --> M[Choose account] --> N[Ask why] --> O[GitHub dispatch<br/>+ monto, cuenta, comentario]
+    C -->|Savings deposit| F[Text = savings_deposit] --> G[Ask amount] --> H[Choose account] --> I[Ask why] --> J[GitHub dispatch<br/>+ monto, cuenta, comentario]
+    C -->|Savings withdrawal| K[Text = savings_withdrawal] --> L[Ask amount] --> M[Choose account] --> N[Ask why] --> O[GitHub dispatch<br/>+ monto, cuenta, comentario]
+    C -->|Credit card payment| P[Text = credit_card_payment] --> Q[Ask amount] --> R[Choose paying account] --> S[Choose card] --> T[GitHub dispatch<br/>+ monto, cuenta, cuenta_destino]
 ```
 
 ### Rule of this Shortcut
@@ -68,16 +69,20 @@ Everything after the Text node (the GitHub dispatch node, node A) is identical a
 
 Need more slots? Duplicate a slot (long-press → Duplicate), change the label and the Text. Fewer? Delete the slot. The key you type must exist as a top-level key in `plantillas_estandarizadas.json` — if it does not, you get a ❌ Telegram message saying `tipo_ingesta '...' does not exist`.
 
-### Savings deposit / withdrawal (keep as they are)
-These two are **structural**: the system needs exactly these keys, `ahorro_aporte` and `ahorro_retiro`. The only blanks are the account lists:
+### Structural options: savings deposit, savings withdrawal, credit card payment (keep as they are)
+These three are **structural**: the system needs exactly these keys, `savings_deposit`, `savings_withdrawal` and `credit_card_payment`. They ask for the amount (and a reason for savings) at run time, because the amount changes. The only blanks are the lists:
 
-| Blank | What to write |
-|---|---|
-| `Lista` node "choose account" | the accounts you move money **from** (deposit) or **to** (withdrawal): exact `cuentas.nombre_cuenta` values, e.g. `Main bank`, `Cash`. The savings account itself is fixed in the template. |
+| Option | Blank | What to write |
+|---|---|---|
+| Savings deposit / withdrawal | `List` node "choose account" | the accounts you move money **from** (deposit) or **to** (withdrawal): exact `cuentas.nombre_cuenta` values, e.g. `Main bank`, `Cash`. The savings account itself is fixed in the template. |
+| Credit card payment | first `List` node ("paying account") | the accounts you pay the card **from** |
+| Credit card payment | second `List` node ("card") | your credit-card accounts (exact names) |
+
+A card payment is recorded as **two linked rows** (paying account −, card +), so the debt in `vista_credito` goes down per card and any number of cards works. If you have no credit card, delete this option and the `credit_card_payment` template.
 
 ### Checklist
 - [ ] 6-7 slots: label + template key each
-- [ ] Savings lists contain your real account names
+- [ ] Savings and card-payment lists contain your real account names
 - [ ] GitHub URL and `Bearer` token set in every dispatch node
 
 ---
@@ -96,8 +101,8 @@ flowchart TD
 | Blank | Node | What to write |
 |---|---|---|
 | Trigger | automation settings | the Wallet cards that should fire it |
-| Account list (2 shown, add as many as you need) | first `Lista` | exact account names, e.g. `Main bank`, `Credit card` |
-| Category list (4 shown, add as many as you need) | second `Lista` | category **codes** (`codigo_categoria`), e.g. `alimentacion`, `transporte` |
+| Account list (2 shown, add as many as you need) | first `List` | exact account names, e.g. `Main bank`, `Credit card` |
+| Category list (4 shown, add as many as you need) | second `List` | category **codes** (`codigo_categoria`), e.g. `groceries`, `transport` |
 | Upload node B (branch Yes) | `Get contents of URL` | URL, `apikey`, `Authorization` as in node B |
 | Dispatch node A (both branches) | `Get contents of URL` | URL and `Authorization` as in node A |
 
@@ -109,23 +114,23 @@ How it records: with a photo, a vision model reads the receipt and labels each p
 
 ```mermaid
 flowchart TD
-    A[Ask: movement date] --> B[Format date] --> C{Menu}
+    C{Menu}
     C -->|Income| D[List accounts] --> E[Choose] --> F[Ask amount] --> G[Ask description] --> H[Ask details] --> I[Build JSON<br/>category = your income category] --> J[GitHub dispatch<br/>node A]
     C -->|Expense| K[List accounts] --> L[Choose] --> M[List categories] --> N[Choose one or several] --> O{Receipt?}
     O -->|Yes| P[Photo + upload node B] --> Q[JSON gasto_foto] --> R[GitHub dispatch node A]
-    O -->|No| S[Per category: amount, description, comment] --> T[JSON gasto_dinamico + fecha] --> U[GitHub dispatch node A]
+    O -->|No| S[Per category: amount, description, comment] --> T[JSON gasto_dinamico] --> U[GitHub dispatch node A]
 ```
 
 | Blank | Node | What to write |
 |---|---|---|
-| Income account list | first `Lista` (branch Income) | accounts that can receive money (not credit cards) |
-| Income category | the `Texto` node right after "description" | the **code** of your catch-all income category (default `ingresos_varios`); it must exist in `categorias` with type `ingreso` |
-| Expense account list | `Lista` (branch Expense) | accounts + credit cards you pay with |
-| Expense category list (any number) | second `Lista` | category codes |
+| Income account list | first `List` (branch Income) | accounts that can receive money (not credit cards) |
+| Income category | the `Text` node right after "description" | the **code** of your catch-all income category (default `other_income`); it must exist in `categorias` with type `ingreso` |
+| Expense account list | `List` (branch Expense) | accounts + credit cards you pay with |
+| Expense category list (any number) | second `List` | category codes |
 | Upload node B | branch Yes | URL, `apikey`, `Authorization` |
 | Dispatch node A | the three HTTP nodes at the end | URL and `Authorization` |
 
-Important: **keep the date inside the payload at the top level** (`"fecha"` next to `"cuenta"`), as the JSON in this repo does; a date placed inside each line is ignored by older versions of the script.
+The date is **not asked**: every record is stamped with the system date at the moment it runs (time zone `TZ_SISTEMA`). If you need to back-date something, edit the row in Supabase.
 
 ---
 
@@ -137,3 +142,15 @@ Important: **keep the date inside the payload at the top level** (`"fecha"` next
 | ❌ `tipo_ingesta '...' does not exist` | the Text node key is not a key of `plantillas_estandarizadas.json` |
 | Nothing arrives, no Telegram | token expired / wrong repo name / missing `Bearer ` prefix (HTTP 401/404 in the Shortcut result) |
 | Photo flow ❌ after upload | URL of node B missing the variable `Text`, or bucket path not `recibos/<name>.jpg` |
+
+---
+
+## Source files and signing
+
+`shortcuts/source/*.shortcut` are the exact Shortcuts of this guide (secrets and personal lists already replaced by placeholders, English prompts, the credit-card option included). They are **unsigned**, and iOS only imports signed Shortcuts, so before sharing or importing them sign on a Mac:
+
+```bash
+shortcuts sign --mode anyone --input shortcuts/source/Gasto_fijo.shortcut --output Gasto_fijo.signed.shortcut
+```
+
+Open the signed file (it lands in the Shortcuts app), fill the placeholders, then *Share → Copy iCloud Link* to publish your own link. Without a Mac, build the Shortcut by hand following the node tables above (about 15 minutes each) or use the published iCloud links.

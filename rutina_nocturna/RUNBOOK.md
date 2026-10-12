@@ -60,7 +60,7 @@ After inserting, verify with a SELECT that the rows exist and only then mark the
 ### Phase 2 — Validate records
 - Load the window's records (phase 0) with codigo_categoria, label and type, excluding those of invariant 6.
 - Load ONLY the active labels available for the categories present (name, criterion, keywords).
-- For each record, judge with `nombre_operacion` + `comentario` whether its label fits its criterion against its siblings of the same category. Example: a supermarket "CHOCOLATE DRINK" under `cafeteria` (served in a bar) is wrong: `despensa` (consumed at home) fits.
+- For each record, judge with `nombre_operacion` + `comentario` whether its label fits its criterion against its siblings of the same category. Example: a supermarket "CHOCOLATE DRINK" under `cafe` (served in a bar) is wrong: `groceries` (consumed at home) fits.
 - If wrong: `update seguimiento_efectivo set id_etiqueta = '<new>' where id_operacion = '<id>';` and one row in `auditoria_cambios` with a short reason.
 - Flag (without touching anything) possible duplicates in the window: same account, date, amount and similar name.
 
@@ -85,9 +85,9 @@ Pendings: R resolved · P need the user
 Validated: N · Labels corrected: X · Possible duplicates: D
 Glossary: +K keywords
 — Corrections —
-SE000701 Chocolate drink: cafeteria → despensa
+SE000701 Chocolate drink: cafe → groceries
 — New glossary —
-despensa: honey, cookies
+groceries: honey, cookies
 — Needs the user —
 RP000031 (gasto_foto): photo unreachable
 ```

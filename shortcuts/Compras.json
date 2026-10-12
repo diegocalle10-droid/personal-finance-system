@@ -1,18 +1,18 @@
 {
-  "nombre": "Compras",
-  "version_minima_ios_cliente": "900",
-  "disparadores": [
+  "name": "Compras",
+  "minimum_ios_client_version": "900",
+  "triggers": [
     {
-      "tipo": "WFWalletTransactionTrigger",
-      "tarjetas_wallet": "{{TUS_TARJETAS_WALLET}}"
+      "type": "WFWalletTransactionTrigger",
+      "wallet_cards": "{{WALLET_CARDS}}"
     }
   ],
-  "acciones": [
+  "actions": [
     {
-      "paso": 1,
-      "accion": "Lista",
-      "salida": "Cuenta",
-      "parametros": {
+      "step": 1,
+      "action": "List",
+      "output": "Account",
+      "parameters": {
         "Items": [
           "{{ACCOUNT_1}}",
           "{{ACCOUNT_2}}"
@@ -20,17 +20,17 @@
       }
     },
     {
-      "paso": 2,
-      "accion": "Elegir de lista",
-      "parametros": {
-        "Input": "{{Cuenta}}"
+      "step": 2,
+      "action": "Choose from list",
+      "parameters": {
+        "Input": "{{Account}}"
       }
     },
     {
-      "paso": 3,
-      "accion": "Lista",
-      "salida": "Categorias",
-      "parametros": {
+      "step": 3,
+      "action": "List",
+      "output": "Categories",
+      "parameters": {
         "Items": [
           "{{CATEGORY_1}}",
           "{{CATEGORY_2}}",
@@ -40,168 +40,168 @@
       }
     },
     {
-      "paso": 4,
-      "accion": "Elegir de lista",
-      "parametros": {
-        "Input": "{{Categorias}}",
-        "ChooseFromListActionSelectMultiple": true
+      "step": 4,
+      "action": "Choose from list",
+      "parameters": {
+        "ChooseFromListActionSelectMultiple": true,
+        "Input": "{{Categories}}"
       }
     },
     {
-      "paso": 5,
-      "accion": "Menu",
-      "pregunta": "Tienes el recibo de tu gasto?",
-      "ramas": [
+      "step": 5,
+      "action": "Menu",
+      "question": "Do you have the receipt?",
+      "branches": [
         {
-          "opcion": "Si",
-          "pasos": [
+          "option": "Yes",
+          "steps": [
             {
-              "paso": 6,
-              "accion": "Tomar foto",
-              "parametros": {
+              "step": 6,
+              "action": "Take photo",
+              "parameters": {
                 "PhotoCount": 1
               }
             },
             {
-              "paso": 7,
-              "accion": "Convertir imagen",
-              "parametros": {
+              "step": 7,
+              "action": "Convert image",
+              "parameters": {
                 "ImageCompressionQuality": 0.5133928656578064,
                 "Input": "{{Photo}}"
               }
             },
             {
-              "paso": 8,
-              "accion": "Numero aleatorio",
-              "parametros": {
-                "RandomNumberMinimum": "100000",
-                "RandomNumberMaximum": "999999999"
+              "step": 8,
+              "action": "Random number",
+              "parameters": {
+                "RandomNumberMaximum": "999999999",
+                "RandomNumberMinimum": "100000"
               }
             },
             {
-              "paso": 9,
-              "accion": "Texto",
-              "parametros": {
+              "step": 9,
+              "action": "Text",
+              "parameters": {
                 "TextActionText": "{{Random Number}}.jpg"
               }
             },
             {
-              "paso": 10,
-              "accion": "Texto",
-              "parametros": {
+              "step": 10,
+              "action": "Text",
+              "parameters": {
                 "TextActionText": "recibos/{{Text}}"
               }
             },
             {
-              "paso": 11,
-              "accion": "HTTP request",
-              "parametros": {
-                "RequestVariable": "{{Converted Image}}",
+              "step": 11,
+              "action": "Get contents of URL",
+              "parameters": {
+                "ShowHeaders": true,
+                "HTTPBodyType": "File",
                 "HTTPHeaders": {
                   "apikey": "{{SUPABASE_PUBLISHABLE_KEY}}",
                   "Authorization": "Bearer {{SUPABASE_PUBLISHABLE_KEY}}",
                   "Content-Type": "image/jpeg"
                 },
-                "ShowHeaders": true,
-                "URL": "https://{{SUPABASE_PROJECT_REF}}.supabase.co/storage/v1/object/{{Text}}",
                 "HTTPMethod": "POST",
-                "HTTPBodyType": "File"
+                "RequestVariable": "{{Converted Image}}",
+                "URL": "https://{{SUPABASE_PROJECT_REF}}.supabase.co/storage/v1/object/{{Text}}"
               }
             },
             {
-              "paso": 12,
-              "accion": "text.combine",
-              "parametros": {
+              "step": 12,
+              "action": "Combine text",
+              "parameters": {
                 "TextCustomSeparator": "','",
                 "TextSeparator": "Custom",
-                "text": "{{Ítems seleccionados}}"
+                "text": "{{Selected Items}}"
               }
             },
             {
-              "paso": 13,
-              "accion": "Texto",
-              "parametros": {
+              "step": 13,
+              "action": "Text",
+              "parameters": {
                 "TextActionText": "{\"event_type\": \"gasto_foto\", \"client_payload\": {\"cuenta\": \"{{Selected Item}}\", \"foto_bucket_path\": \"{{Text}}\", \"categorias\": [\"{{Combined Text}}\"]}}"
               }
             },
             {
-              "paso": 14,
-              "accion": "HTTP request",
-              "parametros": {
-                "RequestVariable": "{{Texto}}",
+              "step": 14,
+              "action": "Get contents of URL",
+              "parameters": {
+                "ShowHeaders": true,
+                "HTTPBodyType": "File",
                 "HTTPHeaders": {
                   "Authorization": "Bearer {{GITHUB_PAT}}",
                   "Accept": "application/vnd.github+json",
                   "X-GitHub-Api-Version": "2022-11-28"
                 },
-                "ShowHeaders": true,
-                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
                 "HTTPMethod": "POST",
-                "HTTPBodyType": "File"
+                "RequestVariable": "{{Text}}",
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches"
               }
             }
           ]
         },
         {
-          "opcion": "No",
-          "pasos": [
+          "option": "No",
+          "steps": [
             {
-              "paso": 15,
-              "accion": "Definir variable",
-              "parametros": {
-                "VariableName": "Lineas"
+              "step": 15,
+              "action": "Set variable",
+              "parameters": {
+                "VariableName": "Lines"
               }
             },
             {
-              "paso": 16,
-              "accion": "repeat.each",
-              "parametros": {
-                "Input": "{{Ítems seleccionados}}"
+              "step": 16,
+              "action": "Repeat with each",
+              "parameters": {
+                "Input": "{{Selected Items}}"
               },
-              "ramas": [
+              "branches": [
                 {
-                  "opcion": "Si se cumple",
-                  "pasos": [
+                  "option": "Per item",
+                  "steps": [
                     {
-                      "paso": 17,
-                      "accion": "Pedir dato",
-                      "parametros": {
-                        "InputType": "Number",
-                        "AskActionPrompt": "Monto para {{Repeat Item}}"
+                      "step": 17,
+                      "action": "Ask for input",
+                      "parameters": {
+                        "AskActionPrompt": "Amount for {{Repeat Item}}",
+                        "InputType": "Number"
                       }
                     },
                     {
-                      "paso": 18,
-                      "accion": "Pedir dato",
-                      "parametros": {
-                        "AskActionPrompt": "Nombre del gasto{{Repeat Item}}"
+                      "step": 18,
+                      "action": "Ask for input",
+                      "parameters": {
+                        "AskActionPrompt": "Expense name for {{Repeat Item}}"
                       }
                     },
                     {
-                      "paso": 19,
-                      "accion": "Pedir dato",
-                      "parametros": {
-                        "AskActionPrompt": "Comentario del gasto {{Repeat Item}}"
+                      "step": 19,
+                      "action": "Ask for input",
+                      "parameters": {
+                        "AskActionPrompt": "Expense comment for {{Repeat Item}}"
                       }
                     },
                     {
-                      "paso": 20,
-                      "accion": "Diccionario",
-                      "parametros": {
+                      "step": 20,
+                      "action": "Dictionary",
+                      "parameters": {
                         "Items": {
                           "importe": "{{Ask for Input}}",
                           "categoria": "{{Repeat Item}}",
                           "nombre_operacion": "{{Ask for Input}}",
-                          "comentario": "{{Solicitar entrada}}"
+                          "comentario": "{{Ask for Input}}"
                         }
                       }
                     },
                     {
-                      "paso": 21,
-                      "accion": "appendvariable",
-                      "parametros": {
+                      "step": 21,
+                      "action": "Add to variable",
+                      "parameters": {
                         "Input": "{{Dictionary}}",
-                        "VariableName": "Lineas"
+                        "VariableName": "Lines"
                       }
                     }
                   ]
@@ -209,35 +209,35 @@
               ]
             },
             {
-              "paso": 22,
-              "accion": "text.combine",
-              "parametros": {
+              "step": 22,
+              "action": "Combine text",
+              "parameters": {
                 "TextCustomSeparator": ",",
                 "TextSeparator": "Custom",
-                "text": "{{Lineas}}"
+                "text": "{{Lines}}"
               }
             },
             {
-              "paso": 23,
-              "accion": "Texto",
-              "parametros": {
+              "step": 23,
+              "action": "Text",
+              "parameters": {
                 "TextActionText": "{\"event_type\": \"gasto_dinamico\", \"client_payload\": {\"cuenta\": \"{{Selected Item}}\", \"lineas\": [{{Combined Text}}]}}"
               }
             },
             {
-              "paso": 24,
-              "accion": "HTTP request",
-              "parametros": {
-                "RequestVariable": "{{Texto}}",
+              "step": 24,
+              "action": "Get contents of URL",
+              "parameters": {
+                "ShowHeaders": true,
+                "HTTPBodyType": "File",
                 "HTTPHeaders": {
                   "Authorization": "Bearer {{GITHUB_PAT}}",
                   "Accept": "application/vnd.github+json",
                   "X-GitHub-Api-Version": "2022-11-28"
                 },
-                "ShowHeaders": true,
-                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
                 "HTTPMethod": "POST",
-                "HTTPBodyType": "File"
+                "RequestVariable": "{{Text}}",
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches"
               }
             }
           ]

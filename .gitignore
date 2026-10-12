@@ -6,3 +6,4 @@ __pycache__/
 *.bak*
 supabase/seed_usuario.sql
 config/plantillas_estandarizadas.json
+!shortcuts/source/*.shortcut
