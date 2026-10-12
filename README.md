@@ -1,6 +1,16 @@
 # Personal Finance System (iOS Shortcuts + Supabase + GitHub Actions + Claude)
 
+![Zero-Friction Personal Finance System](docs/portfolio/slide-1-overview.png)
+
 Frictionless expense tracking: tap an NFC tag or a Shortcut on your iPhone, the expense lands in a Postgres ledger, gets labeled automatically, and a nightly Claude routine audits and improves the labeling. Single currency (EUR), budgets with flexible periods, receipt photos read by a vision model.
+
+## At a glance
+| | |
+|---|---|
+| [Overview](docs/portfolio/slide-1-overview.png) | what it is and what it proves |
+| [Architecture & flow](docs/portfolio/slide-2-architecture.png) | five stages and the safety net |
+| [Inside the Shortcuts](docs/portfolio/slide-3-shortcuts.png) | branches and ingestion decision trees |
+| [Data model & control](docs/portfolio/slide-4-data-and-control.png) | schema, budget views, nightly routine |
 
 ## How it works
 
