@@ -1,0 +1,364 @@
+{
+  "nombre": "Manufinanza",
+  "version_minima_ios_cliente": "900",
+  "disparadores": [],
+  "acciones": [
+    {
+      "paso": 1,
+      "accion": "Pedir dato",
+      "parametros": {
+        "InputType": "Date",
+        "AskActionPrompt": "Fecha del movimiento"
+      }
+    },
+    {
+      "paso": 2,
+      "accion": "Formatear fecha",
+      "parametros": {
+        "DateFormatStyle": "Custom",
+        "DateFormat": "yyyy-MM-dd",
+        "Date": "{{Ask for Input}}"
+      }
+    },
+    {
+      "paso": 3,
+      "accion": "Menu",
+      "pregunta": "",
+      "ramas": [
+        {
+          "opcion": "Ingreso",
+          "pasos": [
+            {
+              "paso": 4,
+              "accion": "Lista",
+              "salida": "Cuenta",
+              "parametros": {
+                "Items": [
+                  "{{ACCOUNT_1}}",
+                  "{{ACCOUNT_2}}"
+                ]
+              }
+            },
+            {
+              "paso": 5,
+              "accion": "Elegir de lista",
+              "parametros": {
+                "Input": "{{Cuenta}}",
+                "ChooseFromListActionPrompt": "Selecciona una cuenta"
+              }
+            },
+            {
+              "paso": 6,
+              "accion": "Pedir dato",
+              "parametros": {
+                "InputType": "Number",
+                "AskActionPrompt": "¿Cuanto dinero vas a ingresar?"
+              }
+            },
+            {
+              "paso": 7,
+              "accion": "Pedir dato",
+              "parametros": {
+                "InputType": "Text",
+                "AskActionPrompt": "Descripcion del ingreso"
+              }
+            },
+            {
+              "paso": 8,
+              "accion": "Texto",
+              "parametros": {
+                "TextActionText": "ingresos_varios"
+              }
+            },
+            {
+              "paso": 9,
+              "accion": "Pedir dato",
+              "parametros": {
+                "InputType": "Text",
+                "AskActionPrompt": "detalles del ingreso"
+              }
+            },
+            {
+              "paso": 10,
+              "accion": "Texto",
+              "parametros": {
+                "TextActionText": "{\"event_type\": \"gasto_dinamico\",\"client_payload\":{\"cuenta\": \"{{Selected Item}}\",\"fecha\":\"{{Formatted Date}}\",\"lineas\":[{\"categoria\":\"{{Text}}\",\"importe\":\"{{Ask for Input}}\",\"nombre_operacion\": \"{{Ask for Input}}\",\"comentario\":\"{{Ask for Input}}\"}]}}"
+              }
+            },
+            {
+              "paso": 11,
+              "accion": "HTTP request",
+              "parametros": {
+                "RequestVariable": "{{Texto}}",
+                "HTTPHeaders": {
+                  "Authorization": "Bearer {{GITHUB_PAT}}",
+                  "Accept": "application/vnd.github+json",
+                  "X-GitHub-Api-Version": "2022-11-28"
+                },
+                "ShowHeaders": true,
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
+                "HTTPMethod": "POST",
+                "HTTPBodyType": "File"
+              }
+            }
+          ]
+        },
+        {
+          "opcion": "Gasto",
+          "pasos": [
+            {
+              "paso": 12,
+              "accion": "Lista",
+              "salida": "Cuenta",
+              "parametros": {
+                "Items": [
+                  "{{ACCOUNT_1}}",
+                  "{{CREDIT_CARD_1}}",
+                  "{{ACCOUNT_2}}"
+                ]
+              }
+            },
+            {
+              "paso": 13,
+              "accion": "Elegir de lista",
+              "parametros": {
+                "Input": "{{Cuenta}}",
+                "ChooseFromListActionPrompt": "Selecciona una cuenta"
+              }
+            },
+            {
+              "paso": 14,
+              "accion": "Lista",
+              "salida": "Categorias",
+              "parametros": {
+                "Items": [
+                  "{{CATEGORY_1}}",
+                  "{{CATEGORY_2}}",
+                  "{{CATEGORY_3}}",
+                  "{{CATEGORY_4}}",
+                  "{{CATEGORY_5}}",
+                  "{{CATEGORY_6}}",
+                  "{{CATEGORY_7}}",
+                  "{{CATEGORY_8}}",
+                  "{{CATEGORY_9}}",
+                  "{{CATEGORY_10}}",
+                  "{{CATEGORY_11}}",
+                  "{{CATEGORY_12}}",
+                  "{{CATEGORY_13}}",
+                  "{{CATEGORY_14}}",
+                  "{{CATEGORY_15}}"
+                ]
+              }
+            },
+            {
+              "paso": 15,
+              "accion": "Elegir de lista",
+              "parametros": {
+                "Input": "{{Categorias}}",
+                "ChooseFromListActionPrompt": "Selecciona una categoria de gasto",
+                "ChooseFromListActionSelectMultiple": true
+              }
+            },
+            {
+              "paso": 16,
+              "accion": "Menu",
+              "pregunta": "¿Tienes el recibo de tu gasto?",
+              "ramas": [
+                {
+                  "opcion": "Si",
+                  "pasos": [
+                    {
+                      "paso": 17,
+                      "accion": "Tomar foto",
+                      "parametros": {
+                        "PhotoCount": 1
+                      }
+                    },
+                    {
+                      "paso": 18,
+                      "accion": "Convertir imagen",
+                      "parametros": {
+                        "ImageCompressionQuality": 0.5133928656578064,
+                        "Input": "{{Photo}}"
+                      }
+                    },
+                    {
+                      "paso": 19,
+                      "accion": "Numero aleatorio",
+                      "parametros": {
+                        "RandomNumberMinimum": "100000",
+                        "RandomNumberMaximum": "999999999"
+                      }
+                    },
+                    {
+                      "paso": 20,
+                      "accion": "Texto",
+                      "parametros": {
+                        "TextActionText": "{{Random Number}}.jpg"
+                      }
+                    },
+                    {
+                      "paso": 21,
+                      "accion": "Texto",
+                      "parametros": {
+                        "TextActionText": "recibos/{{Text}}"
+                      }
+                    },
+                    {
+                      "paso": 22,
+                      "accion": "HTTP request",
+                      "parametros": {
+                        "RequestVariable": "{{Converted Image}}",
+                        "HTTPHeaders": {
+                          "apikey": "{{SUPABASE_PUBLISHABLE_KEY}}",
+                          "Authorization": "Bearer {{SUPABASE_PUBLISHABLE_KEY}}",
+                          "Content-Type": "image/jpeg"
+                        },
+                        "ShowHeaders": true,
+                        "URL": "https://{{SUPABASE_PROJECT_REF}}.supabase.co/storage/v1/object/{{Text}}",
+                        "HTTPMethod": "POST",
+                        "HTTPBodyType": "File"
+                      }
+                    },
+                    {
+                      "paso": 23,
+                      "accion": "text.combine",
+                      "parametros": {
+                        "TextCustomSeparator": "','",
+                        "TextSeparator": "Custom",
+                        "text": "{{Selected Item}}"
+                      }
+                    },
+                    {
+                      "paso": 24,
+                      "accion": "Texto",
+                      "parametros": {
+                        "TextActionText": "{\"event_type\": \"gasto_foto\", \"client_payload\": {\"cuenta\": \"{{Selected Item}}\", \"foto_bucket_path\": \"{{Text}}\", \"categorias\": [\"{{Combined Text}}\"]}}"
+                      }
+                    },
+                    {
+                      "paso": 25,
+                      "accion": "HTTP request",
+                      "parametros": {
+                        "RequestVariable": "{{Text}}",
+                        "HTTPHeaders": {
+                          "Authorization": "Bearer {{GITHUB_PAT}}",
+                          "Accept": "application/vnd.github+json",
+                          "X-GitHub-Api-Version": "2022-11-28"
+                        },
+                        "ShowHeaders": true,
+                        "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
+                        "HTTPMethod": "POST",
+                        "HTTPBodyType": "File"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "opcion": "No",
+                  "pasos": [
+                    {
+                      "paso": 26,
+                      "accion": "Definir variable",
+                      "parametros": {
+                        "VariableName": "Lineas"
+                      }
+                    },
+                    {
+                      "paso": 27,
+                      "accion": "repeat.each",
+                      "parametros": {
+                        "Input": "{{Selected Item}}"
+                      },
+                      "ramas": [
+                        {
+                          "opcion": "Si se cumple",
+                          "pasos": [
+                            {
+                              "paso": 28,
+                              "accion": "Pedir dato",
+                              "parametros": {
+                                "InputType": "Number",
+                                "AskActionPrompt": "Monto para {{Repeat Item}}"
+                              }
+                            },
+                            {
+                              "paso": 29,
+                              "accion": "Pedir dato",
+                              "parametros": {
+                                "AskActionPrompt": "Descripción para {{Repeat Item}}"
+                              }
+                            },
+                            {
+                              "paso": 30,
+                              "accion": "Pedir dato",
+                              "parametros": {
+                                "AskActionPrompt": "comentario o detalles{{Repeat Item}}"
+                              }
+                            },
+                            {
+                              "paso": 31,
+                              "accion": "Diccionario",
+                              "parametros": {
+                                "Items": {
+                                  "importe": "{{Ask for Input}}",
+                                  "categoria": "{{Repeat Item}}",
+                                  "nombre_operacion": "{{Ask for Input}}",
+                                  "comentario": "{{Solicitar entrada}}"
+                                }
+                              }
+                            },
+                            {
+                              "paso": 32,
+                              "accion": "appendvariable",
+                              "parametros": {
+                                "Input": "{{Dictionary}}",
+                                "VariableName": "Lineas"
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "paso": 33,
+                      "accion": "text.combine",
+                      "parametros": {
+                        "TextCustomSeparator": ",",
+                        "TextSeparator": "Custom",
+                        "text": "{{Lineas}}"
+                      }
+                    },
+                    {
+                      "paso": 34,
+                      "accion": "Texto",
+                      "parametros": {
+                        "TextActionText": "{\"event_type\": \"gasto_dinamico\", \"client_payload\": {\"cuenta\": \"{{Selected Item}}\", \"fecha\": \"{{Formatted Date}}\", \"lineas\": [{{Combined Text}}]}}"
+                      }
+                    },
+                    {
+                      "paso": 35,
+                      "accion": "HTTP request",
+                      "parametros": {
+                        "RequestVariable": "{{Text}}",
+                        "HTTPHeaders": {
+                          "Authorization": "Bearer {{GITHUB_PAT}}",
+                          "Accept": "application/vnd.github+json",
+                          "X-GitHub-Api-Version": "2022-11-28"
+                        },
+                        "ShowHeaders": true,
+                        "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
+                        "HTTPMethod": "POST",
+                        "HTTPBodyType": "File"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

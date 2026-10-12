@@ -1,0 +1,448 @@
+{
+  "nombre": "Gasto_fijo",
+  "version_minima_ios_cliente": "900",
+  "disparadores": [],
+  "acciones": [
+    {
+      "paso": 1,
+      "accion": "Pedir dato",
+      "parametros": {
+        "AskActionPrompt": "¿Cuál es la fecha del pago?",
+        "InputType": "Date"
+      }
+    },
+    {
+      "paso": 2,
+      "accion": "Formatear fecha",
+      "parametros": {
+        "DateFormatStyle": "Custom",
+        "DateFormat": "yyyy-MM-dd",
+        "Locale": "es",
+        "Date": "{{Ask for Input}}"
+      }
+    },
+    {
+      "paso": 3,
+      "accion": "Menu",
+      "pregunta": "What are you logging?",
+      "ramas": [
+        {
+          "opcion": "iCloud",
+          "pasos": [
+            {
+              "paso": 4,
+              "accion": "Texto",
+              "parametros": {
+                "TextActionText": "icloud"
+              }
+            },
+            {
+              "paso": 5,
+              "accion": "HTTP request",
+              "parametros": {
+                "HTTPHeaders": {
+                  "Authorization": "Bearer {{GITHUB_PAT}}",
+                  "Accept": "application/vnd.github+json"
+                },
+                "ShowHeaders": false,
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
+                "JSONValues": {
+                  "event_type": "ingesta_estandarizada",
+                  "client_payload": {
+                    "tipo_ingesta": "{{Text}}",
+                    "fecha": "{{Formatted Date}}"
+                  }
+                },
+                "HTTPMethod": "POST"
+              }
+            }
+          ]
+        },
+        {
+          "opcion": "Claude IA",
+          "pasos": [
+            {
+              "paso": 6,
+              "accion": "Texto",
+              "parametros": {
+                "TextActionText": "claudeia"
+              }
+            },
+            {
+              "paso": 7,
+              "accion": "HTTP request",
+              "parametros": {
+                "HTTPHeaders": {
+                  "Authorization": "Bearer {{GITHUB_PAT}}",
+                  "Accept": "application/vnd.github+json"
+                },
+                "ShowHeaders": false,
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
+                "JSONValues": {
+                  "event_type": "ingesta_estandarizada",
+                  "client_payload": {
+                    "tipo_ingesta": "{{Text}}",
+                    "fecha": "{{Formatted Date}}"
+                  }
+                },
+                "HTTPMethod": "POST"
+              }
+            }
+          ]
+        },
+        {
+          "opcion": "Movil",
+          "pasos": [
+            {
+              "paso": 8,
+              "accion": "Texto",
+              "parametros": {
+                "TextActionText": "movil"
+              }
+            },
+            {
+              "paso": 9,
+              "accion": "Pedir dato",
+              "parametros": {
+                "AskActionPrompt": "How much did you pay?",
+                "InputType": "Number"
+              }
+            },
+            {
+              "paso": 10,
+              "accion": "HTTP request",
+              "parametros": {
+                "HTTPHeaders": {
+                  "Authorization": "Bearer {{GITHUB_PAT}}",
+                  "Accept": "application/vnd.github+json"
+                },
+                "ShowHeaders": false,
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
+                "JSONValues": {
+                  "event_type": "ingesta_estandarizada",
+                  "client_payload": {
+                    "tipo_ingesta": "{{Text}}",
+                    "fecha": "{{Formatted Date}}",
+                    "monto": "{{Ask for Input}}"
+                  }
+                },
+                "HTTPMethod": "POST"
+              }
+            }
+          ]
+        },
+        {
+          "opcion": "Renta",
+          "pasos": [
+            {
+              "paso": 11,
+              "accion": "Texto",
+              "parametros": {
+                "TextActionText": "renta"
+              }
+            },
+            {
+              "paso": 12,
+              "accion": "Pedir dato",
+              "parametros": {
+                "AskActionPrompt": "How much did you pay?",
+                "InputType": "Number"
+              }
+            },
+            {
+              "paso": 13,
+              "accion": "HTTP request",
+              "parametros": {
+                "HTTPHeaders": {
+                  "Authorization": "Bearer {{GITHUB_PAT}}",
+                  "Accept": "application/vnd.github+json"
+                },
+                "ShowHeaders": false,
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
+                "JSONValues": {
+                  "event_type": "ingesta_estandarizada",
+                  "client_payload": {
+                    "tipo_ingesta": "{{Text}}",
+                    "fecha": "{{Formatted Date}}",
+                    "monto": "{{Ask for Input}}"
+                  }
+                },
+                "HTTPMethod": "POST"
+              }
+            }
+          ]
+        },
+        {
+          "opcion": "Pago de tarjeta",
+          "pasos": [
+            {
+              "paso": 14,
+              "accion": "Texto",
+              "parametros": {
+                "TextActionText": "pago_tarjeta"
+              }
+            },
+            {
+              "paso": 15,
+              "accion": "Pedir dato",
+              "parametros": {
+                "InputType": "Number",
+                "AskActionPrompt": "How much did you pay?"
+              }
+            },
+            {
+              "paso": 16,
+              "accion": "Lista",
+              "parametros": {
+                "Items": [
+                  "{{ACCOUNT_1}}",
+                  "{{ACCOUNT_2}}"
+                ]
+              }
+            },
+            {
+              "paso": 17,
+              "accion": "Elegir de lista",
+              "parametros": {
+                "Input": "{{List}}",
+                "ChooseFromListActionPrompt": "Which account are you paying from?"
+              }
+            },
+            {
+              "paso": "n+",
+              "accion": "Elegir de lista",
+              "parametros": {
+                "Input": [
+                  "{{CREDIT_CARD_1}}"
+                ],
+                "ChooseFromListActionPrompt": "Which card are you paying?"
+              }
+            },
+            {
+              "paso": 18,
+              "accion": "HTTP request",
+              "parametros": {
+                "HTTPHeaders": {
+                  "Authorization": "Bearer {{GITHUB_PAT}}",
+                  "Accept": "application/vnd.github+json"
+                },
+                "ShowHeaders": false,
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
+                "JSONValues": {
+                  "event_type": "ingesta_estandarizada",
+                  "client_payload": {
+                    "tipo_ingesta": "{{Text}}",
+                    "fecha": "{{Formatted Date}}",
+                    "monto": "{{Ask for Input}}",
+                    "cuenta": "{{Selected Item}}",
+                    "cuenta_destino": "{{Selected Item (card)}}"
+                  }
+                },
+                "HTTPMethod": "POST"
+              }
+            }
+          ]
+        },
+        {
+          "opcion": "Abono mensual de metro",
+          "pasos": [
+            {
+              "paso": 23,
+              "accion": "Texto",
+              "parametros": {
+                "TextActionText": "abono_metro"
+              }
+            },
+            {
+              "paso": 24,
+              "accion": "Pedir dato",
+              "parametros": {
+                "InputType": "Number",
+                "AskActionPrompt": "How much did you pay?"
+              }
+            },
+            {
+              "paso": 25,
+              "accion": "Lista",
+              "parametros": {
+                "Items": [
+                  "{{ACCOUNT_1}}",
+                  "{{ACCOUNT_2}}",
+                  "{{CREDIT_CARD_1}}"
+                ]
+              }
+            },
+            {
+              "paso": 26,
+              "accion": "Elegir de lista",
+              "parametros": {
+                "Input": "{{List}}",
+                "ChooseFromListActionPrompt": "Which account are you paying from?"
+              }
+            },
+            {
+              "paso": 27,
+              "accion": "HTTP request",
+              "parametros": {
+                "HTTPHeaders": {
+                  "Authorization": "Bearer {{GITHUB_PAT}}",
+                  "Accept": "application/vnd.github+json"
+                },
+                "ShowHeaders": false,
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
+                "JSONValues": {
+                  "event_type": "ingesta_estandarizada",
+                  "client_payload": {
+                    "tipo_ingesta": "{{Text}}",
+                    "fecha": "{{Formatted Date}}",
+                    "monto": "{{Ask for Input}}",
+                    "cuenta": "{{Selected Item}}"
+                  }
+                },
+                "HTTPMethod": "POST"
+              }
+            }
+          ]
+        },
+        {
+          "opcion": "Aporte de ahorro",
+          "pasos": [
+            {
+              "paso": 28,
+              "accion": "Texto",
+              "parametros": {
+                "TextActionText": "ahorro_aporte"
+              }
+            },
+            {
+              "paso": 29,
+              "accion": "Pedir dato",
+              "parametros": {
+                "InputType": "Number",
+                "AskActionPrompt": "How much did you pay?"
+              }
+            },
+            {
+              "paso": 30,
+              "accion": "Lista",
+              "parametros": {
+                "Items": [
+                  "{{ACCOUNT_1}}",
+                  "{{ACCOUNT_2}}"
+                ]
+              }
+            },
+            {
+              "paso": 31,
+              "accion": "Elegir de lista",
+              "parametros": {
+                "Input": "{{List}}",
+                "ChooseFromListActionPrompt": "Which account is used?"
+              }
+            },
+            {
+              "paso": 32,
+              "accion": "Pedir dato",
+              "parametros": {
+                "InputType": "Text",
+                "AskActionPrompt": "Why are you saving this?"
+              }
+            },
+            {
+              "paso": 33,
+              "accion": "HTTP request",
+              "parametros": {
+                "HTTPHeaders": {
+                  "Authorization": "Bearer {{GITHUB_PAT}}",
+                  "Accept": "application/vnd.github+json"
+                },
+                "ShowHeaders": false,
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
+                "JSONValues": {
+                  "event_type": "ingesta_estandarizada",
+                  "client_payload": {
+                    "tipo_ingesta": "{{Text}}",
+                    "fecha": "{{Formatted Date}}",
+                    "monto": "{{Ask for Input}}",
+                    "cuenta": "{{Selected Item}}",
+                    "comentario": "{{Ask for Input}}"
+                  }
+                },
+                "HTTPMethod": "POST"
+              }
+            }
+          ]
+        },
+        {
+          "opcion": "Retiro de ahorro",
+          "pasos": [
+            {
+              "paso": 34,
+              "accion": "Texto",
+              "parametros": {
+                "TextActionText": "ahorro_retiro"
+              }
+            },
+            {
+              "paso": 35,
+              "accion": "Pedir dato",
+              "parametros": {
+                "AskActionPrompt": "How much did you pay?",
+                "InputType": "Number"
+              }
+            },
+            {
+              "paso": 36,
+              "accion": "Lista",
+              "parametros": {
+                "Items": [
+                  "{{ACCOUNT_1}}",
+                  "{{ACCOUNT_2}}"
+                ]
+              }
+            },
+            {
+              "paso": 37,
+              "accion": "Elegir de lista",
+              "parametros": {
+                "Input": "{{List}}",
+                "ChooseFromListActionPrompt": "Which account is used?"
+              }
+            },
+            {
+              "paso": 38,
+              "accion": "Pedir dato",
+              "parametros": {
+                "InputType": "Text",
+                "AskActionPrompt": "Why are you withdrawing this?"
+              }
+            },
+            {
+              "paso": 39,
+              "accion": "HTTP request",
+              "parametros": {
+                "HTTPHeaders": {
+                  "Authorization": "Bearer {{GITHUB_PAT}}",
+                  "Accept": "application/vnd.github+json"
+                },
+                "ShowHeaders": false,
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
+                "JSONValues": {
+                  "event_type": "ingesta_estandarizada",
+                  "client_payload": {
+                    "tipo_ingesta": "{{Text}}",
+                    "fecha": "{{Formatted Date}}",
+                    "monto": "{{Ask for Input}}",
+                    "cuenta": "{{Selected Item}}",
+                    "comentario": "{{Ask for Input}}"
+                  }
+                },
+                "HTTPMethod": "POST"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
