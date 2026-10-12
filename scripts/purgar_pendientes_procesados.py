@@ -35,12 +35,12 @@ def main():
         sys.exit(1)
 
     if not borrados:
-        print("Nada que purgar.")
+        print("Nothing to purge.")
         return
 
     ids = ", ".join(fila["id_pendiente"] for fila in borrados)
-    notificar_telegram(f"🧹 Purga diaria: {len(borrados)} pendiente(s) procesado(s) eliminado(s): {ids}")
-    print(f"Purgados: {ids}")
+    notificar_telegram(f"🧹 Daily purge: {len(borrados)} processed pending(s) removed: {ids}")
+    print(f"Purged: {ids}")
 
 
 if __name__ == "__main__":

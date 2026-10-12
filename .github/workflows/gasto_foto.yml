@@ -4,6 +4,9 @@ on:
   repository_dispatch:
     types: [gasto_foto]
 
+permissions:
+  contents: read
+
 jobs:
   ingest:
     runs-on: ubuntu-latest

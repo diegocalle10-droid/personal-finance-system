@@ -27,13 +27,13 @@
       "pregunta": "What are you logging?",
       "ramas": [
         {
-          "opcion": "iCloud",
+          "opcion": "Subscription",
           "pasos": [
             {
               "paso": 4,
               "accion": "Texto",
               "parametros": {
-                "TextActionText": "icloud"
+                "TextActionText": "subscription_example"
               }
             },
             {
@@ -59,45 +59,13 @@
           ]
         },
         {
-          "opcion": "Claude IA",
-          "pasos": [
-            {
-              "paso": 6,
-              "accion": "Texto",
-              "parametros": {
-                "TextActionText": "claudeia"
-              }
-            },
-            {
-              "paso": 7,
-              "accion": "HTTP request",
-              "parametros": {
-                "HTTPHeaders": {
-                  "Authorization": "Bearer {{GITHUB_PAT}}",
-                  "Accept": "application/vnd.github+json"
-                },
-                "ShowHeaders": false,
-                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
-                "JSONValues": {
-                  "event_type": "ingesta_estandarizada",
-                  "client_payload": {
-                    "tipo_ingesta": "{{Text}}",
-                    "fecha": "{{Formatted Date}}"
-                  }
-                },
-                "HTTPMethod": "POST"
-              }
-            }
-          ]
-        },
-        {
-          "opcion": "Movil",
+          "opcion": "Mobile phone",
           "pasos": [
             {
               "paso": 8,
               "accion": "Texto",
               "parametros": {
-                "TextActionText": "movil"
+                "TextActionText": "phone_example"
               }
             },
             {
@@ -132,13 +100,13 @@
           ]
         },
         {
-          "opcion": "Renta",
+          "opcion": "Rent",
           "pasos": [
             {
               "paso": 11,
               "accion": "Texto",
               "parametros": {
-                "TextActionText": "renta"
+                "TextActionText": "rent"
               }
             },
             {
@@ -173,7 +141,7 @@
           ]
         },
         {
-          "opcion": "Pago de tarjeta",
+          "opcion": "Credit card payment",
           "pasos": [
             {
               "paso": 14,
@@ -209,7 +177,7 @@
               }
             },
             {
-              "paso": "n+",
+              "paso": "17b",
               "accion": "Elegir de lista",
               "parametros": {
                 "Input": [
@@ -244,13 +212,13 @@
           ]
         },
         {
-          "opcion": "Abono mensual de metro",
+          "opcion": "Transit pass",
           "pasos": [
             {
               "paso": 23,
               "accion": "Texto",
               "parametros": {
-                "TextActionText": "abono_metro"
+                "TextActionText": "transit_pass"
               }
             },
             {
@@ -305,7 +273,7 @@
           ]
         },
         {
-          "opcion": "Aporte de ahorro",
+          "opcion": "Savings deposit",
           "pasos": [
             {
               "paso": 28,
@@ -374,7 +342,7 @@
           ]
         },
         {
-          "opcion": "Retiro de ahorro",
+          "opcion": "Savings withdrawal",
           "pasos": [
             {
               "paso": 34,

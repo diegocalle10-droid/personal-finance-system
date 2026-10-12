@@ -193,7 +193,7 @@ create or replace view public.vista_presupuesto_mensual with (security_invoker =
           periodicidad, meses_periodo, presupuesto_base
      from categorias
     where meses_periodo between 1 and 6
-      and tipo not in ('traspaso','pago tarjeta')
+      and tipo not in ('traspaso','pago tarjeta','ingreso')
       and fecha_inicio <= current_date and (fecha_fin is null or fecha_fin >= current_date)
     order by codigo_categoria, fecha_inicio desc
  ), consumo as (

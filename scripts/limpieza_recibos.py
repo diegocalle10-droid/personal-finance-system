@@ -24,19 +24,28 @@ BUCKET = "recibos"
 RETENCION_DIAS = 7
 
 
+def nombre_en_bucket(ruta):
+    """Pending records store the path as the Shortcut built it
+    ("recibos/123.jpg", bucket included) while Storage lists the object name
+    without the bucket ("123.jpg"). Both are normalized to the object name."""
+    prefijo = BUCKET + "/"
+    return ruta[len(prefijo):] if ruta.startswith(prefijo) else ruta
+
+
 def main():
     objetos = listar_objetos_storage(BUCKET)
     limite = datetime.now(timezone.utc) - timedelta(days=RETENCION_DIAS)
-    referenciadas = listar_fotos_pendientes_de_borrado()
+    referenciadas = {nombre_en_bucket(r) for r in listar_fotos_pendientes_de_borrado()}
 
     a_borrar = [
         obj["name"] for obj in objetos
-        if datetime.fromisoformat(obj["created_at"].replace("Z", "+00:00")) < limite
+        if obj.get("created_at")
+        and datetime.fromisoformat(obj["created_at"].replace("Z", "+00:00")) < limite
         and obj["name"] not in referenciadas
     ]
 
     if not a_borrar:
-        print("Nada que borrar.")
+        print("Nothing to delete.")
         return
 
     resultado = borrar_objetos_storage(BUCKET, a_borrar)
@@ -45,7 +54,7 @@ def main():
         print(f"ERROR: {resultado.status_code} {resultado.text}")
         return
 
-    print(f"OK: {len(a_borrar)} objeto(s) borrado(s): {', '.join(a_borrar)}")
+    print(f"OK: {len(a_borrar)} object(s) deleted: {', '.join(a_borrar)}")
 
 
 if __name__ == "__main__":

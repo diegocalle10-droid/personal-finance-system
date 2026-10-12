@@ -47,15 +47,22 @@ def test_fixed_amount_template():
 
 def test_variable_amount_applies_sign_and_comma():
     version = est.cargar_version_vigente("phone_example", "2026-03-01")
-    fila = est.construir_fila_simple(version, "2026-03-01", "12,5", None, "April bill")
+    fila = est.construir_fila_simple(version, "2026-03-01", "12,5", None, None)
     assert fila["importe"] == -12.5
-    assert fila["comentario"] == "April bill"
+    assert fila["comentario"] == "Mobile phone bill"
 
 
-def test_comment_from_shortcut_is_required():
+def test_variable_amount_requires_monto():
     version = est.cargar_version_vigente("phone_example", "2026-03-01")
     with pytest.raises(ValueError):
-        est.construir_fila_simple(version, "2026-03-01", "10", None, None)
+        est.construir_fila_simple(version, "2026-03-01", None, None, None)
+
+
+def test_rent_comment_comes_from_category_glosa():
+    version = est.cargar_version_vigente("rent", "2026-03-01")
+    fila = est.construir_fila_simple(version, "2026-03-01", "500", None, None)
+    assert fila["comentario"] == "Street 1"
+    assert fila["importe"] == -500.0
 
 
 def test_card_payment_creates_two_linked_rows_on_the_chosen_card():

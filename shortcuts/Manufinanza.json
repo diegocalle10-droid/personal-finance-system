@@ -67,7 +67,7 @@
               "paso": 8,
               "accion": "Texto",
               "parametros": {
-                "TextActionText": "ingresos_varios"
+                "TextActionText": "{{INCOME_CATEGORY_CODE}}"
               }
             },
             {

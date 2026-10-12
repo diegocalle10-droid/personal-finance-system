@@ -4,6 +4,9 @@ on:
   repository_dispatch:
     types: [ingesta_estandarizada]
 
+permissions:
+  contents: read
+
 jobs:
   ingest:
     runs-on: ubuntu-latest

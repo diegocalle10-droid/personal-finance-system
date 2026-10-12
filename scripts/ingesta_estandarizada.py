@@ -55,8 +55,15 @@ PLANTILLAS_PATH = os.path.join(
 
 
 def cargar_version_vigente(tipo_ingesta, fecha):
-    with open(PLANTILLAS_PATH, encoding="utf-8") as f:
-        plantillas = json.load(f)
+    try:
+        with open(PLANTILLAS_PATH, encoding="utf-8") as f:
+            plantillas = json.load(f)
+    except FileNotFoundError:
+        raise ValueError(
+            "config/plantillas_estandarizadas.json is missing in the repository. Generate it with the "
+            "Phase 0 interview (see config/plantillas_estandarizadas.example.json) and commit it to your "
+            "private copy (remove it from .gitignore)."
+        )
 
     versiones = plantillas.get(tipo_ingesta)
     if not versiones:
