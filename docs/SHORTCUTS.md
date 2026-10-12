@@ -4,9 +4,11 @@ Three Shortcuts feed the system. You duplicate them from the links below, fill t
 
 | # | Shortcut | Use it to | Starts from | Link |
 |---|---|---|---|---|
-| 1 | **Gasto_fijo** (fixed expenses) | log rent, subscriptions, phone… with one tap, plus savings deposits/withdrawals | you, manually (or a time automation) | `<ICLOUD_LINK_GASTO_FIJO>` |
-| 2 | **Compras** (purchases) | log a purchase right when you pay with a Wallet card / NFC | Wallet transaction automation | `<ICLOUD_LINK_COMPRAS>` |
-| 3 | **Manufinanza** (manual hub) | log any income or expense by hand, with or without receipt photo | you, manually | `<ICLOUD_LINK_MANUFINANZA>` |
+| 1 | **Gasto_fijo** (fixed expenses) | log rent, subscriptions, phone… with one tap, plus savings deposits/withdrawals and card payments | you, manually (or a time automation) | _coming soon_ |
+| 2 | **Compras** (purchases) | log a purchase right when you pay with a Wallet card / NFC | Wallet transaction automation | [Add to Shortcuts](https://www.icloud.com/shortcuts/861ee31cddb8450d9c3d39d0e64a2892) ¹ |
+| 3 | **Manufinanza** (manual hub) | log any income or expense by hand, with or without receipt photo | you, manually | [Add to Shortcuts](https://www.icloud.com/shortcuts/2e4cda24504b4764ab5c0226cbb5aedf) ¹ |
+
+¹ The published copies still show their prompts in Spanish and some placeholders as `completar` (= *fill in*); the node structure is the one described in this guide. Manufinanza still asks for a date that the system ignores (records use the system date): just answer anything. The English builds replace these links as soon as they are published.
 
 JSON exports of the exact node sequence live in [`shortcuts/`](../shortcuts) (documentation only: you duplicate the iCloud links, you do not import these).
 
