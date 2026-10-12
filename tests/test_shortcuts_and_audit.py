@@ -40,14 +40,18 @@ def test_shortcut_event_types_match_workflows():
     assert used and used <= triggers, used - triggers
 
 
-def test_fixed_expense_keys_exist_as_templates():
-    keys = set()
+def test_fixed_expense_shortcut_structure():
+    """Literal keys (savings) must be templates; every fixed-expense slot must be
+    a placeholder pair (label + key) so Phase 0 can fill it."""
+    texts, labels = [], []
 
     def walk(n):
         if isinstance(n, dict):
             t = (n.get("parametros") or {}).get("TextActionText")
             if n.get("accion") == "Texto" and isinstance(t, str):
-                keys.add(t)
+                texts.append(t)
+            if "opcion" in n:
+                labels.append(n["opcion"])
             for v in n.values():
                 walk(v)
         elif isinstance(n, list):
@@ -55,7 +59,12 @@ def test_fixed_expense_keys_exist_as_templates():
                 walk(v)
     walk(load("shortcuts/Gasto_fijo.json"))
     templates = set(load("config/plantillas_estandarizadas.example.json"))
-    assert keys and keys <= templates, keys - templates
+    literal = {t for t in texts if not t.startswith("{{")}
+    assert literal == {"ahorro_aporte", "ahorro_retiro"}
+    assert literal <= templates
+    slots = [t for t in texts if re.fullmatch(r"\{\{FIXED_EXPENSE_\d+_KEY\}\}", t)]
+    slot_labels = [l for l in labels if re.fullmatch(r"\{\{FIXED_EXPENSE_\d+_LABEL\}\}", l)]
+    assert len(slots) == len(slot_labels) >= 6
 
 
 def test_estandarizada_payload_fields_are_read_by_workflow():
@@ -81,8 +90,9 @@ def test_all_placeholders_are_documented():
     from list_placeholders import placeholders
     doc = read("shortcuts/PLACEHOLDERS.md")
     for name in placeholders():
+        generic = re.sub(r"_\d+(?=_|$)", "_n", name)
         base = re.sub(r"_\d+$", "", name)
-        assert base in doc or name in doc, name
+        assert name in doc or generic in doc or base in doc, name
 
 
 def test_no_secret_like_values_in_shortcuts():
@@ -183,3 +193,30 @@ def test_dynamic_flow_builds_expected_rows(monkeypatch):
     assert [f["importe"] for f in captured["filas"]] == [-2.5, 10.0]
     assert etiquetas == ["despensa", "salario"] and fecha == "2026-10-05"
     assert all("medio_pago" not in f for f in captured["filas"])  # set by the DB trigger
+
+
+def test_dynamic_accepts_date_inside_lines_as_fallback(monkeypatch):
+    import ingesta_dinamica as dyn
+    monkeypatch.setattr(dyn, "resolver_id_cuenta_por_nombre", lambda n: "CU000001")
+    monkeypatch.setattr(dyn, "resolver_categoria", lambda c, f: {"id_categoria": "CT1", "tipo": "gasto"})
+    monkeypatch.setattr(dyn, "listar_etiquetas_para_matcher", lambda: [
+        {"id_etiqueta": "ET3", "nombre_etiqueta": "despensa", "keyword": ["leche"],
+         "posibles_categorias": ["alimentacion"]}])
+    seen = {}
+
+    class Resp:
+        ok = True
+
+        def json(self):
+            return [dict(f, id_operacion="SE000001") for f in seen["filas"]]
+
+    def fake_insert(filas):
+        seen["filas"] = filas
+        return Resp()
+
+    monkeypatch.setattr(dyn, "insertar_filas", fake_insert)
+    lineas = json.dumps([{"fecha": "2026-09-01", "categoria": "alimentacion", "importe": "1",
+                          "nombre_operacion": "leche", "comentario": ""}])
+    _, _, fecha = dyn.procesar_gasto_dinamico("Main bank", lineas, None)
+    assert fecha == "2026-09-01"
+    assert seen["filas"][0]["fecha_operacion"] == "2026-09-01"

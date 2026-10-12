@@ -10,7 +10,7 @@ All of them end with an HTTP `POST` to `https://api.github.com/repos/{{GITHUB_OW
 |---|---|---|
 | Dynamic expense (NFC / manual) | `gasto_dinamico` | `cuenta` (account name), `fecha` (optional, `YYYY-MM-DD`), `lineas`: array of `{importe, categoria, nombre_operacion, comentario}` (1-3) |
 | Receipt photo | `gasto_foto` | `cuenta`, `foto_bucket_path` (object uploaded to bucket `recibos`), `categorias` (codes preselected in the Shortcut) |
-| Fixed expenses | `ingesta_estandarizada` | `tipo_ingesta` (template key), `fecha`, `monto` (if variable), `cuenta` (if template account is null), `cuenta_destino` (card payments: which card), `comentario` (if the template asks) |
+| Fixed expenses | `ingesta_estandarizada` | `tipo_ingesta` (template key) and `fecha` only: amount and account are fixed in the template. Savings add `monto`, `cuenta`, `comentario`; card payments add `monto`, `cuenta`, `cuenta_destino` |
 
 Static lists inside the Shortcuts (accounts, categories, fixed-expense menu) are generated for you by the Phase 0 interview in `MIS_ATAJOS.md`: it tells you which node to edit and with which value.
 

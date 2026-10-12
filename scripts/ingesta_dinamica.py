@@ -162,6 +162,9 @@ def procesar_gasto_dinamico(cuenta_nombre, lineas_raw, fecha_shortcut):
     if id_cuenta is None:
         raise ValueError(f"No account named '{cuenta_nombre}'")
 
+    # Older Shortcuts put "fecha" inside each line; use it when the top-level date is missing.
+    if not fecha_shortcut:
+        fecha_shortcut = next((l.get("fecha") for l in lineas if isinstance(l, dict) and l.get("fecha")), None)
     fecha = resolver_fecha(fecha_shortcut)
     etiquetas = listar_etiquetas_para_matcher()
 

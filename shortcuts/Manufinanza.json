@@ -35,7 +35,8 @@
               "parametros": {
                 "Items": [
                   "{{ACCOUNT_1}}",
-                  "{{ACCOUNT_2}}"
+                  "{{ACCOUNT_2}}",
+                  "{{ACCOUNT_3}}"
                 ]
               }
             },
@@ -52,7 +53,7 @@
               "accion": "Pedir dato",
               "parametros": {
                 "InputType": "Number",
-                "AskActionPrompt": "¿Cuanto dinero vas a ingresar?"
+                "AskActionPrompt": "Cuanto dinero vas a ingresar?"
               }
             },
             {
@@ -113,8 +114,8 @@
               "parametros": {
                 "Items": [
                   "{{ACCOUNT_1}}",
-                  "{{CREDIT_CARD_1}}",
-                  "{{ACCOUNT_2}}"
+                  "{{ACCOUNT_2}}",
+                  "{{ACCOUNT_3}}"
                 ]
               }
             },
@@ -134,19 +135,7 @@
                 "Items": [
                   "{{CATEGORY_1}}",
                   "{{CATEGORY_2}}",
-                  "{{CATEGORY_3}}",
-                  "{{CATEGORY_4}}",
-                  "{{CATEGORY_5}}",
-                  "{{CATEGORY_6}}",
-                  "{{CATEGORY_7}}",
-                  "{{CATEGORY_8}}",
-                  "{{CATEGORY_9}}",
-                  "{{CATEGORY_10}}",
-                  "{{CATEGORY_11}}",
-                  "{{CATEGORY_12}}",
-                  "{{CATEGORY_13}}",
-                  "{{CATEGORY_14}}",
-                  "{{CATEGORY_15}}"
+                  "{{CATEGORY_3}}"
                 ]
               }
             },
@@ -162,7 +151,7 @@
             {
               "paso": 16,
               "accion": "Menu",
-              "pregunta": "¿Tienes el recibo de tu gasto?",
+              "pregunta": "Tienes el recibo de tu gasto?",
               "ramas": [
                 {
                   "opcion": "Si",

@@ -7,7 +7,7 @@
       "paso": 1,
       "accion": "Pedir dato",
       "parametros": {
-        "AskActionPrompt": "¿Cuál es la fecha del pago?",
+        "AskActionPrompt": "Cuál es la fecha del pago?",
         "InputType": "Date"
       }
     },
@@ -27,13 +27,13 @@
       "pregunta": "What are you logging?",
       "ramas": [
         {
-          "opcion": "Subscription",
+          "opcion": "{{FIXED_EXPENSE_1_LABEL}}",
           "pasos": [
             {
               "paso": 4,
               "accion": "Texto",
               "parametros": {
-                "TextActionText": "subscription_example"
+                "TextActionText": "{{FIXED_EXPENSE_1_KEY}}"
               }
             },
             {
@@ -59,25 +59,17 @@
           ]
         },
         {
-          "opcion": "Mobile phone",
+          "opcion": "{{FIXED_EXPENSE_2_LABEL}}",
           "pasos": [
             {
-              "paso": 8,
+              "paso": 6,
               "accion": "Texto",
               "parametros": {
-                "TextActionText": "phone_example"
+                "TextActionText": "{{FIXED_EXPENSE_2_KEY}}"
               }
             },
             {
-              "paso": 9,
-              "accion": "Pedir dato",
-              "parametros": {
-                "AskActionPrompt": "How much did you pay?",
-                "InputType": "Number"
-              }
-            },
-            {
-              "paso": 10,
+              "paso": 7,
               "accion": "HTTP request",
               "parametros": {
                 "HTTPHeaders": {
@@ -90,8 +82,7 @@
                   "event_type": "ingesta_estandarizada",
                   "client_payload": {
                     "tipo_ingesta": "{{Text}}",
-                    "fecha": "{{Formatted Date}}",
-                    "monto": "{{Ask for Input}}"
+                    "fecha": "{{Formatted Date}}"
                   }
                 },
                 "HTTPMethod": "POST"
@@ -100,21 +91,77 @@
           ]
         },
         {
-          "opcion": "Rent",
+          "opcion": "{{FIXED_EXPENSE_3_LABEL}}",
           "pasos": [
             {
-              "paso": 11,
+              "paso": 8,
               "accion": "Texto",
               "parametros": {
-                "TextActionText": "rent"
+                "TextActionText": "{{FIXED_EXPENSE_3_KEY}}"
               }
             },
             {
-              "paso": 12,
-              "accion": "Pedir dato",
+              "paso": 9,
+              "accion": "HTTP request",
               "parametros": {
-                "AskActionPrompt": "How much did you pay?",
-                "InputType": "Number"
+                "HTTPHeaders": {
+                  "Authorization": "Bearer {{GITHUB_PAT}}",
+                  "Accept": "application/vnd.github+json"
+                },
+                "ShowHeaders": false,
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
+                "JSONValues": {
+                  "event_type": "ingesta_estandarizada",
+                  "client_payload": {
+                    "tipo_ingesta": "{{Text}}",
+                    "fecha": "{{Formatted Date}}"
+                  }
+                },
+                "HTTPMethod": "POST"
+              }
+            }
+          ]
+        },
+        {
+          "opcion": "{{FIXED_EXPENSE_4_LABEL}}",
+          "pasos": [
+            {
+              "paso": 10,
+              "accion": "Texto",
+              "parametros": {
+                "TextActionText": "{{FIXED_EXPENSE_4_KEY}}"
+              }
+            },
+            {
+              "paso": 11,
+              "accion": "HTTP request",
+              "parametros": {
+                "HTTPHeaders": {
+                  "Authorization": "Bearer {{GITHUB_PAT}}",
+                  "Accept": "application/vnd.github+json"
+                },
+                "ShowHeaders": false,
+                "URL": "https://api.github.com/repos/{{GITHUB_OWNER}}/{{GITHUB_REPO}}/dispatches",
+                "JSONValues": {
+                  "event_type": "ingesta_estandarizada",
+                  "client_payload": {
+                    "tipo_ingesta": "{{Text}}",
+                    "fecha": "{{Formatted Date}}"
+                  }
+                },
+                "HTTPMethod": "POST"
+              }
+            }
+          ]
+        },
+        {
+          "opcion": "{{FIXED_EXPENSE_5_LABEL}}",
+          "pasos": [
+            {
+              "paso": 12,
+              "accion": "Texto",
+              "parametros": {
+                "TextActionText": "{{FIXED_EXPENSE_5_KEY}}"
               }
             },
             {
@@ -131,8 +178,7 @@
                   "event_type": "ingesta_estandarizada",
                   "client_payload": {
                     "tipo_ingesta": "{{Text}}",
-                    "fecha": "{{Formatted Date}}",
-                    "monto": "{{Ask for Input}}"
+                    "fecha": "{{Formatted Date}}"
                   }
                 },
                 "HTTPMethod": "POST"
@@ -141,53 +187,17 @@
           ]
         },
         {
-          "opcion": "Credit card payment",
+          "opcion": "{{FIXED_EXPENSE_6_LABEL}}",
           "pasos": [
             {
               "paso": 14,
               "accion": "Texto",
               "parametros": {
-                "TextActionText": "pago_tarjeta"
+                "TextActionText": "{{FIXED_EXPENSE_6_KEY}}"
               }
             },
             {
               "paso": 15,
-              "accion": "Pedir dato",
-              "parametros": {
-                "InputType": "Number",
-                "AskActionPrompt": "How much did you pay?"
-              }
-            },
-            {
-              "paso": 16,
-              "accion": "Lista",
-              "parametros": {
-                "Items": [
-                  "{{ACCOUNT_1}}",
-                  "{{ACCOUNT_2}}"
-                ]
-              }
-            },
-            {
-              "paso": 17,
-              "accion": "Elegir de lista",
-              "parametros": {
-                "Input": "{{List}}",
-                "ChooseFromListActionPrompt": "Which account are you paying from?"
-              }
-            },
-            {
-              "paso": "17b",
-              "accion": "Elegir de lista",
-              "parametros": {
-                "Input": [
-                  "{{CREDIT_CARD_1}}"
-                ],
-                "ChooseFromListActionPrompt": "Which card are you paying?"
-              }
-            },
-            {
-              "paso": 18,
               "accion": "HTTP request",
               "parametros": {
                 "HTTPHeaders": {
@@ -199,11 +209,8 @@
                 "JSONValues": {
                   "event_type": "ingesta_estandarizada",
                   "client_payload": {
-                    "tipo_ingesta": "{{Text}}",
-                    "fecha": "{{Formatted Date}}",
-                    "monto": "{{Ask for Input}}",
-                    "cuenta": "{{Selected Item}}",
-                    "cuenta_destino": "{{Selected Item (card)}}"
+                    "tipo_ingesta": "{{Texto}}",
+                    "fecha": "{{Formatted Date}}"
                   }
                 },
                 "HTTPMethod": "POST"
@@ -212,44 +219,17 @@
           ]
         },
         {
-          "opcion": "Transit pass",
+          "opcion": "{{FIXED_EXPENSE_7_LABEL}}",
           "pasos": [
             {
-              "paso": 23,
+              "paso": 16,
               "accion": "Texto",
               "parametros": {
-                "TextActionText": "transit_pass"
+                "TextActionText": "{{FIXED_EXPENSE_7_KEY}}"
               }
             },
             {
-              "paso": 24,
-              "accion": "Pedir dato",
-              "parametros": {
-                "InputType": "Number",
-                "AskActionPrompt": "How much did you pay?"
-              }
-            },
-            {
-              "paso": 25,
-              "accion": "Lista",
-              "parametros": {
-                "Items": [
-                  "{{ACCOUNT_1}}",
-                  "{{ACCOUNT_2}}",
-                  "{{CREDIT_CARD_1}}"
-                ]
-              }
-            },
-            {
-              "paso": 26,
-              "accion": "Elegir de lista",
-              "parametros": {
-                "Input": "{{List}}",
-                "ChooseFromListActionPrompt": "Which account are you paying from?"
-              }
-            },
-            {
-              "paso": 27,
+              "paso": 17,
               "accion": "HTTP request",
               "parametros": {
                 "HTTPHeaders": {
@@ -261,10 +241,8 @@
                 "JSONValues": {
                   "event_type": "ingesta_estandarizada",
                   "client_payload": {
-                    "tipo_ingesta": "{{Text}}",
-                    "fecha": "{{Formatted Date}}",
-                    "monto": "{{Ask for Input}}",
-                    "cuenta": "{{Selected Item}}"
+                    "tipo_ingesta": "{{Texto}}",
+                    "fecha": "{{Formatted Date}}"
                   }
                 },
                 "HTTPMethod": "POST"
@@ -276,14 +254,14 @@
           "opcion": "Savings deposit",
           "pasos": [
             {
-              "paso": 28,
+              "paso": 18,
               "accion": "Texto",
               "parametros": {
                 "TextActionText": "ahorro_aporte"
               }
             },
             {
-              "paso": 29,
+              "paso": 19,
               "accion": "Pedir dato",
               "parametros": {
                 "InputType": "Number",
@@ -291,7 +269,7 @@
               }
             },
             {
-              "paso": 30,
+              "paso": 20,
               "accion": "Lista",
               "parametros": {
                 "Items": [
@@ -301,15 +279,15 @@
               }
             },
             {
-              "paso": 31,
+              "paso": 21,
               "accion": "Elegir de lista",
               "parametros": {
                 "Input": "{{List}}",
-                "ChooseFromListActionPrompt": "Which account is used?"
+                "ChooseFromListActionPrompt": "Which account are used?"
               }
             },
             {
-              "paso": 32,
+              "paso": 22,
               "accion": "Pedir dato",
               "parametros": {
                 "InputType": "Text",
@@ -317,7 +295,7 @@
               }
             },
             {
-              "paso": 33,
+              "paso": 23,
               "accion": "HTTP request",
               "parametros": {
                 "HTTPHeaders": {
@@ -345,14 +323,14 @@
           "opcion": "Savings withdrawal",
           "pasos": [
             {
-              "paso": 34,
+              "paso": 24,
               "accion": "Texto",
               "parametros": {
                 "TextActionText": "ahorro_retiro"
               }
             },
             {
-              "paso": 35,
+              "paso": 25,
               "accion": "Pedir dato",
               "parametros": {
                 "AskActionPrompt": "How much did you pay?",
@@ -360,7 +338,7 @@
               }
             },
             {
-              "paso": 36,
+              "paso": 26,
               "accion": "Lista",
               "parametros": {
                 "Items": [
@@ -370,15 +348,15 @@
               }
             },
             {
-              "paso": 37,
+              "paso": 27,
               "accion": "Elegir de lista",
               "parametros": {
                 "Input": "{{List}}",
-                "ChooseFromListActionPrompt": "Which account is used?"
+                "ChooseFromListActionPrompt": "Which account are used?"
               }
             },
             {
-              "paso": 38,
+              "paso": 28,
               "accion": "Pedir dato",
               "parametros": {
                 "InputType": "Text",
@@ -386,7 +364,7 @@
               }
             },
             {
-              "paso": 39,
+              "paso": 29,
               "accion": "HTTP request",
               "parametros": {
                 "HTTPHeaders": {

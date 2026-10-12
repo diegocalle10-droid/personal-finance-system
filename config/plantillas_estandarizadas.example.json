@@ -1,5 +1,41 @@
 {
-  "subscription_example": [
+  "rent": [
+    {
+      "fecha_inicio": "2026-01-01",
+      "fecha_fin": null,
+      "nombre_operacion": "Rent payment",
+      "id_cuenta": "CU000001",
+      "codigo_categoria": "renta",
+      "id_etiqueta": "ET000001",
+      "importe_fijo": -500.0,
+      "comentario_fuente": "categorias.glosa"
+    }
+  ],
+  "internet": [
+    {
+      "fecha_inicio": "2026-01-01",
+      "fecha_fin": null,
+      "nombre_operacion": "Home internet",
+      "id_cuenta": "CU000001",
+      "codigo_categoria": "subscripciones",
+      "id_etiqueta": "ET000015",
+      "importe_fijo": -30.0,
+      "comentario_fijo": "Home internet"
+    }
+  ],
+  "phone": [
+    {
+      "fecha_inicio": "2026-01-01",
+      "fecha_fin": null,
+      "nombre_operacion": "Mobile phone plan",
+      "id_cuenta": "CU000001",
+      "codigo_categoria": "subscripciones",
+      "id_etiqueta": "ET000025",
+      "importe_fijo": -12.0,
+      "comentario_fijo": "Mobile phone plan"
+    }
+  ],
+  "subscription": [
     {
       "fecha_inicio": "2026-01-01",
       "fecha_fin": null,
@@ -11,54 +47,40 @@
       "comentario_fijo": "Monthly cloud storage"
     }
   ],
-  "phone_example": [
+  "gym": [
     {
       "fecha_inicio": "2026-01-01",
       "fecha_fin": null,
-      "nombre_operacion": "Mobile phone plan",
+      "nombre_operacion": "Gym membership",
       "id_cuenta": "CU000001",
-      "codigo_categoria": "subscripciones",
-      "id_etiqueta": "ET000025",
-      "importe_fijo": null,
-      "signo": -1,
-      "comentario_fijo": "Mobile phone bill"
+      "codigo_categoria": "gimnasio",
+      "id_etiqueta": "ET000030",
+      "importe_fijo": -30.0,
+      "comentario_fijo": "Monthly gym membership"
     }
   ],
-  "rent": [
+  "transit_pass": [
     {
       "fecha_inicio": "2026-01-01",
       "fecha_fin": null,
-      "nombre_operacion": "Rent payment",
+      "nombre_operacion": "Monthly transit pass",
       "id_cuenta": "CU000001",
-      "codigo_categoria": "renta",
-      "id_etiqueta": "ET000001",
-      "importe_fijo": null,
-      "signo": -1,
-      "comentario_fuente": "categorias.glosa"
+      "codigo_categoria": "transporte",
+      "id_etiqueta": "ET000002",
+      "importe_fijo": -40.0,
+      "comentario_fijo": "Monthly public transport pass"
     }
   ],
-  "pago_tarjeta": [
+  "salary": [
     {
       "fecha_inicio": "2026-01-01",
       "fecha_fin": null,
-      "codigo_categoria": "creditos",
-      "id_etiqueta": "ET000038",
-      "comentario_fijo": "Credit card payment",
-      "filas": [
-        {
-          "rol": "origen",
-          "id_cuenta": null,
-          "signo": -1,
-          "nombre_operacion": "Credit card payment"
-        },
-        {
-          "rol": "destino",
-          "id_cuenta": null,
-          "cuenta_payload": "cuenta_destino",
-          "signo": 1,
-          "nombre_operacion": "Credit card payment"
-        }
-      ]
+      "nombre_operacion": "Salary",
+      "id_cuenta": "CU000001",
+      "codigo_categoria": "salario",
+      "id_etiqueta": "ET000016",
+      "importe_fijo": 1500.0,
+      "comentario_fijo": "Monthly salary"
     }
   ],
   "ahorro_aporte": [
@@ -107,17 +129,28 @@
       ]
     }
   ],
-  "transit_pass": [
+  "pago_tarjeta": [
     {
       "fecha_inicio": "2026-01-01",
       "fecha_fin": null,
-      "nombre_operacion": "Monthly transit pass",
-      "id_cuenta": null,
-      "codigo_categoria": "transporte",
-      "id_etiqueta": "ET000002",
-      "importe_fijo": null,
-      "signo": -1,
-      "comentario_fijo": "Monthly public transport pass"
+      "codigo_categoria": "creditos",
+      "id_etiqueta": "ET000038",
+      "comentario_fijo": "Credit card payment",
+      "filas": [
+        {
+          "rol": "origen",
+          "id_cuenta": null,
+          "signo": -1,
+          "nombre_operacion": "Credit card payment"
+        },
+        {
+          "rol": "destino",
+          "id_cuenta": null,
+          "cuenta_payload": "cuenta_destino",
+          "signo": 1,
+          "nombre_operacion": "Credit card payment"
+        }
+      ]
     }
   ]
 }

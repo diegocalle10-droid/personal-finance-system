@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Standardized ingestion: row building, linked rows (card payment, savings)
+"""Standardized ingestion: fixed expenses, linked rows (card payment, savings)
 and validity of the shipped example templates. Supabase lookups are patched."""
 import json
 import os
+import re
 
 import pytest
 
@@ -16,6 +17,7 @@ CATEGORIAS = {
     "creditos": {"id_categoria": "CT2", "tipo": "pago tarjeta", "glosa": None},
     "ahorros": {"id_categoria": "CT3", "tipo": "traspaso", "glosa": None},
     "subscripciones": {"id_categoria": "CT4", "tipo": "coste fijo", "glosa": None},
+    "salario": {"id_categoria": "CT5", "tipo": "ingreso", "glosa": None},
 }
 CUENTAS = {"Main bank": "CU1", "Card A": "CU3", "Card B": "CU4"}
 
@@ -37,32 +39,48 @@ def test_example_templates_are_valid_json_with_required_fields():
             assert "filas" in v or "nombre_operacion" in v, tipo
 
 
-def test_fixed_amount_template():
-    filas = [est.construir_fila_simple(est.cargar_version_vigente("subscription_example", "2026-03-01"),
-                                       "2026-03-01", None, None, None)]
-    assert filas[0]["importe"] == -2.99
-    assert filas[0]["id_cuenta"] == "CU000001"
-    assert filas[0]["tipo"] == "coste fijo"
+def test_every_simple_example_is_a_fixed_expense():
+    """Design rule: a fixed expense has a fixed amount AND a fixed account, so the
+    Shortcut only sends tipo_ingesta + fecha."""
+    data = json.load(open(EXAMPLE, encoding="utf-8"))
+    for tipo, versiones in data.items():
+        for v in versiones:
+            if "filas" in v:
+                continue
+            assert v.get("importe_fijo") not in (None, 0), tipo
+            assert v.get("id_cuenta"), tipo
+            assert "comentario_fijo" in v or "comentario_fuente" in v, tipo
 
 
-def test_variable_amount_applies_sign_and_comma():
-    version = est.cargar_version_vigente("phone_example", "2026-03-01")
-    fila = est.construir_fila_simple(version, "2026-03-01", "12,5", None, None)
-    assert fila["importe"] == -12.5
-    assert fila["comentario"] == "Mobile phone bill"
+def test_fixed_expense_needs_only_type_and_date():
+    version = est.cargar_version_vigente("subscription", "2026-03-01")
+    fila = est.construir_fila_simple(version, "2026-03-01", None, None, None)
+    assert fila["importe"] == -2.99
+    assert fila["id_cuenta"] == "CU000001"
+    assert fila["tipo"] == "coste fijo"
+    assert fila["comentario"] == "Monthly cloud storage"
 
 
-def test_variable_amount_requires_monto():
-    version = est.cargar_version_vigente("phone_example", "2026-03-01")
-    with pytest.raises(ValueError):
-        est.construir_fila_simple(version, "2026-03-01", None, None, None)
+def test_fixed_income_keeps_positive_sign():
+    version = est.cargar_version_vigente("salary", "2026-03-01")
+    fila = est.construir_fila_simple(version, "2026-03-01", None, None, None)
+    assert fila["importe"] == 1500.0 and fila["tipo"] == "ingreso"
 
 
 def test_rent_comment_comes_from_category_glosa():
     version = est.cargar_version_vigente("rent", "2026-03-01")
-    fila = est.construir_fila_simple(version, "2026-03-01", "500", None, None)
+    fila = est.construir_fila_simple(version, "2026-03-01", None, None, None)
     assert fila["comentario"] == "Street 1"
     assert fila["importe"] == -500.0
+
+
+def test_variable_amount_template_still_supported_and_requires_monto():
+    version = {"fecha_inicio": "2026-01-01", "fecha_fin": None, "nombre_operacion": "x", "id_cuenta": "CU1",
+               "codigo_categoria": "renta", "id_etiqueta": "ET1", "importe_fijo": None, "signo": -1,
+               "comentario_fijo": "c"}
+    assert est.construir_fila_simple(version, "2026-03-01", "12,5", None, None)["importe"] == -12.5
+    with pytest.raises(ValueError):
+        est.construir_fila_simple(version, "2026-03-01", None, None, None)
 
 
 def test_card_payment_creates_two_linked_rows_on_the_chosen_card():
@@ -84,15 +102,23 @@ def test_savings_deposit_nets_to_zero_and_needs_comment():
     version = est.cargar_version_vigente("ahorro_aporte", "2026-03-01")
     filas = est.construir_filas_multiples(version, "2026-03-01", "50", "Main bank", None, "Monthly saving")
     assert [f["importe"] for f in filas] == [-50.0, 50.0]
+    assert [f["id_cuenta"] for f in filas] == ["CU1", "CU000004"]
     with pytest.raises(ValueError):
         est.construir_filas_multiples(version, "2026-03-01", "50", "Main bank", None, None)
+
+
+def test_savings_withdrawal_goes_to_the_chosen_account():
+    version = est.cargar_version_vigente("ahorro_retiro", "2026-03-01")
+    filas = est.construir_filas_multiples(version, "2026-03-01", "50", "Main bank", None, "Need cash")
+    assert [f["importe"] for f in filas] == [-50.0, 50.0]
+    assert [f["id_cuenta"] for f in filas] == ["CU000004", "CU1"]
 
 
 def test_unknown_type_and_missing_date():
     with pytest.raises(ValueError):
         est.cargar_version_vigente("nope", "2026-03-01")
     with pytest.raises(ValueError):
-        est.procesar_ingesta_estandarizada("rent", None, "1", None, None)
+        est.procesar_ingesta_estandarizada("rent", None, None, None, None)
 
 
 def test_expired_version_is_not_valid():
@@ -107,7 +133,6 @@ def test_no_second_currency_left_in_code():
 
 def test_example_template_label_ids_exist_in_default_seed():
     """The example templates must point to labels that the default seed creates."""
-    import re
     seed = open(os.path.join(ROOT, "supabase", "seed_etiquetas_default.sql"), encoding="utf-8").read()
     seed_ids = set(re.findall(r"\('(ET\d{6})'", seed))
     with open(EXAMPLE, encoding="utf-8") as f:

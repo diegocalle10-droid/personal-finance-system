@@ -15,7 +15,7 @@
       "parametros": {
         "Items": [
           "{{ACCOUNT_1}}",
-          "{{CREDIT_CARD_1}}"
+          "{{ACCOUNT_2}}"
         ]
       }
     },
@@ -35,18 +35,7 @@
           "{{CATEGORY_1}}",
           "{{CATEGORY_2}}",
           "{{CATEGORY_3}}",
-          "{{CATEGORY_4}}",
-          "{{CATEGORY_5}}",
-          "{{CATEGORY_6}}",
-          "{{CATEGORY_7}}",
-          "{{CATEGORY_8}}",
-          "{{CATEGORY_9}}",
-          "{{CATEGORY_10}}",
-          "{{CATEGORY_11}}",
-          "{{CATEGORY_12}}",
-          "{{CATEGORY_13}}",
-          "{{CATEGORY_14}}",
-          "{{CATEGORY_15}}"
+          "{{CATEGORY_4}}"
         ]
       }
     },
@@ -61,7 +50,7 @@
     {
       "paso": 5,
       "accion": "Menu",
-      "pregunta": "¿Tienes el recibo de tu gasto?",
+      "pregunta": "Tienes el recibo de tu gasto?",
       "ramas": [
         {
           "opcion": "Si",

@@ -45,7 +45,7 @@ iOS Shortcut ──repository_dispatch──▶ GitHub Actions ──REST──�
 1. Create a Supabase project; run `supabase/setup.sql`, then `supabase/seed_etiquetas_default.sql`.
 2. Run the **Phase 0 interview** ([phase0/SKILL.md](phase0/SKILL.md)) with Claude Code: it generates `supabase/seed_usuario.sql`, your templates and `MIS_ATAJOS.md`.
 3. Set secrets and variables — which key to create, where, and where it is used: [docs/SECRETS.md](docs/SECRETS.md). What the interview asks: [docs/PHASE0.md](docs/PHASE0.md).
-4. Build the Shortcuts ([shortcuts/README.md](shortcuts/README.md)).
+4. Build the Shortcuts with the visual node-by-node guide: [docs/SHORTCUTS.md](docs/SHORTCUTS.md) (placeholders: [shortcuts/PLACEHOLDERS.md](shortcuts/PLACEHOLDERS.md)).
 5. Schedule the nightly routine ([rutina_nocturna/RUNBOOK.md](rutina_nocturna/RUNBOOK.md)).
 
 In your private copy, remove `config/plantillas_estandarizadas.json` and `supabase/seed_usuario.sql` from `.gitignore` so the workflows can read your templates.
