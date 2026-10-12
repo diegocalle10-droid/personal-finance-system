@@ -11,6 +11,7 @@ Frictionless expense tracking: tap an NFC tag or a Shortcut on your iPhone, the 
 | [Architecture & flow](docs/portfolio/slide-2-architecture.png) | five stages and the safety net |
 | [Inside the Shortcuts](docs/portfolio/slide-3-shortcuts.png) | branches and ingestion decision trees |
 | [Data model & control](docs/portfolio/slide-4-data-and-control.png) | schema, budget views, nightly routine |
+| [Technical portfolio document (PDF)](docs/portfolio/PF-2609-PY-003_v1_Personal_Finance_System.pdf) | 8-page write-up: problem, solution, logic, results, code fragments |
 
 ## How it works
 

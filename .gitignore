@@ -7,3 +7,4 @@ __pycache__/
 supabase/seed_usuario.sql
 config/plantillas_estandarizadas.json
 !shortcuts/source/*.shortcut
+PF-2605-*.pdf
