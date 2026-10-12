@@ -96,3 +96,14 @@ def test_expired_version_is_not_valid():
 def test_no_second_currency_left_in_code():
     src = open(os.path.join(ROOT, "scripts", "ingesta_estandarizada.py"), encoding="utf-8").read()
     assert "monto_eur" not in src.lower() and "importe_eur" not in src
+
+
+def test_example_template_label_ids_exist_in_default_seed():
+    """The example templates must point to labels that the default seed creates."""
+    import re
+    seed = open(os.path.join(ROOT, "supabase", "seed_etiquetas_default.sql"), encoding="utf-8").read()
+    seed_ids = set(re.findall(r"\('(ET\d{6})'", seed))
+    with open(EXAMPLE, encoding="utf-8") as f:
+        data = json.load(f)
+    used = {v["id_etiqueta"] for versiones in data.values() for v in versiones}
+    assert used <= seed_ids, used - seed_ids

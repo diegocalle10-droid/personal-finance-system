@@ -24,10 +24,13 @@ CURRENCY_SYMBOL = os.environ.get("CURRENCY_SYMBOL") or "€"
 
 REST_HEADERS = {
     "apikey": SERVICE_KEY,
-    "Authorization": f"Bearer {SERVICE_KEY}",
     "Content-Type": "application/json",
     "Prefer": "return=representation",
 }
+# Legacy service_role keys are JWTs and go in Authorization too. The new
+# "sb_secret_..." keys are opaque: they only travel in the apikey header.
+if not SERVICE_KEY.startswith("sb_secret_"):
+    REST_HEADERS["Authorization"] = f"Bearer {SERVICE_KEY}"
 
 
 def notificar_telegram(texto):

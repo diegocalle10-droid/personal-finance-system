@@ -9,7 +9,7 @@ Nothing sensitive lives in the code. Every value below is created by you and sto
 | Name | Where to get it | Used by |
 |---|---|---|
 | `SUPABASE_URL` | Supabase → Project Settings → API → Project URL | all scripts |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project Settings → API → service_role (secret key) | all scripts |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project Settings → API Keys → **secret key** (`sb_secret_...`) or the legacy `service_role` JWT. Both work. Never put it in a Shortcut. | all scripts |
 | `TELEGRAM_BOT_TOKEN` | @BotFather → `/newbot` | all scripts |
 | `TELEGRAM_CHAT_ID` | send a message to your bot, open `https://api.telegram.org/bot<token>/getUpdates` | all scripts |
 | `DASHSCOPE_API_KEY` | Alibaba Model Studio (DashScope) → API keys | photo flow |
