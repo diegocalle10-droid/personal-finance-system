@@ -4,7 +4,7 @@ Three Shortcuts feed the system. You duplicate them from the links below, fill t
 
 | # | Shortcut | Use it to | Starts from | Link |
 |---|---|---|---|---|
-| 1 | **Gasto_fijo** (fixed expenses) | log rent, subscriptions, phone… with one tap, plus savings deposits/withdrawals and card payments | you, manually (or a time automation) | _coming soon_ |
+| 1 | **Gasto_fijo** (fixed expenses) | log rent, subscriptions, phone… with one tap, plus savings deposits/withdrawals and card payments | you, manually (or a time automation) | [Add to Shortcuts](https://www.icloud.com/shortcuts/56f188d1f45b4d939edb168c03759bd4) ¹ |
 | 2 | **Compras** (purchases) | log a purchase right when you pay with a Wallet card / NFC | Wallet transaction automation | [Add to Shortcuts](https://www.icloud.com/shortcuts/861ee31cddb8450d9c3d39d0e64a2892) ¹ |
 | 3 | **Manufinanza** (manual hub) | log any income or expense by hand, with or without receipt photo | you, manually | [Add to Shortcuts](https://www.icloud.com/shortcuts/2e4cda24504b4764ab5c0226cbb5aedf) ¹ |
 
