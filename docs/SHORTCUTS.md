@@ -10,6 +10,8 @@ Three Shortcuts feed the system. You duplicate them from the links below, fill t
 
 ¹ The published copies still show their prompts in Spanish and some placeholders as `completar` (= *fill in*); the node structure is the one described in this guide. Manufinanza still asks for a date that the system ignores (records use the system date): just answer anything. The English builds replace these links as soon as they are published.
 
+**If a Shortcut misbehaves or something looks different, the reference is [`shortcuts/<Name>.json`](../shortcuts) (every node, in order, with the exact values) together with the node tables below.** Compare node by node and fix the Shortcut to match; then run the Phase 0 interview, which tells you the value of every blank.
+
 JSON exports of the exact node sequence live in [`shortcuts/`](../shortcuts) (documentation only: you duplicate the iCloud links, you do not import these).
 
 ---
