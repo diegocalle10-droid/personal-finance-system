@@ -169,12 +169,13 @@ def borrar_registros_pendientes_de_foto(foto_bucket_path):
 # --- Vision AI: Qwen through DashScope (OpenAI-compatible endpoint) ---
 # QWEN_BASE_URL (the compatible-mode URL of your workspace) is a GitHub Actions
 # secret. The MODEL is a parameter here in the script (not a secret). Options:
-# qwen3-vl-flash (cheapest) or qwen3-vl-plus (more capable). The photo prompt is
+# qwen3.6-flash (cheap, multimodal; qwen3-vl-flash was retired) or qwen3-vl-plus
+# (more capable, pricier). The photo prompt is
 # designed so that flash performs well: a numbered menu limited to the
 # categories chosen in the Shortcut, a glossary enforced in code and amount
 # verification against the receipt TOTAL.
 QWEN_BASE_URL = (os.environ.get("QWEN_BASE_URL") or "").rstrip("/")
-MODELO_QWEN = "qwen3-vl-flash"
+MODELO_QWEN = "qwen3.6-flash"
 
 MAX_INTENTOS_QWEN = 3    # total attempts (1 initial + 2 retries)
 ESPERA_QWEN_5XX_SEG = 5  # 5xx = servers saturated
